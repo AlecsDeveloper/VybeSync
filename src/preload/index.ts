@@ -1,16 +1,27 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
-// Custom APIs for renderer
 const api = {}
-
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('electron', electronAPI);
+    contextBridge.exposeInMainWorld('api', api);
+
+    type Callback = (data: unknown) => void;
+
+    const listeners: Record<string, Callback[]> = {};
+
+    ipcRenderer.on("vybesync:event", (_, { type, payload }) => {
+      listeners[type]?.forEach(cb => cb(payload));
+    });
+
+  contextBridge.exposeInMainWorld("vybesync", {
+    on: (type: string, callback: Callback) => {
+      if (!listeners[type]) listeners[type] = [];
+      listeners[type].push(callback);
+    }
+  });
+
   } catch (error) {
     console.error(error)
   }

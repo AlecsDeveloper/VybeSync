@@ -6,9 +6,15 @@
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self' https://*.googlevideo.com; connect-src 'self';"
+      content="
+        default-src 'self'; 
+        script-src 'self'; 
+        style-src 'self' 'unsafe-inline'; 
+        img-src 'self' data: https: blob:; 
+        media-src 'self' https:; 
+        connect-src *;
+      "
     />
-
     <script type="module" src="/src/scripts/index.ts"></script>
   </head>
 
@@ -16,5 +22,4 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
-
 </html>

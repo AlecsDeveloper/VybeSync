@@ -1,23 +1,55 @@
 import React from 'react'
 import type { Song } from "@scripts/modules/SearchAPI";
+import { durationFormat } from '@renderer/lib/Utils';
+import SongSVG from "@assets/icons/Song.svg?react"
 
 type Props = {
   song: Song;
+  index: number;
 };
 
-export default function SongItem({ song }: Props): React.JSX.Element {
+export default function SongItem({ song, index }: Props): React.JSX.Element {
   const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("youtube:getSource", { videoId: song.videoId });
+
+  const thumbnail = song.thumbnails[0]?.url;
 
   return (
     <div 
       id={song.videoId} 
       onClick={handleClickButton}
-      className="w-[calc(100%-16px)] h-20 bg-transparent rounded-[12px] border-none mx-auto text-ui-gray-100 hover:bg-ui-dark-150 flex items-center"
+      className="w-[calc(100%-16px)] h-12 bg-transparent rounded-[12px] border-none mx-auto text-ui-gray-100 hover:bg-ui-dark-150 flex items-center"
     >
-      <img src={song.thumbnails[0].url} className='size-18 rounded-[12px] ml-0.5 p-2' />
-      <section className='ml-4'>
-        <h4>{song.name}</h4>
-        <h2 className='font-medium'>{song.artist.name}</h2>
+      <section className='w-12 flex items-center justify-center font-mono text-sm'>
+        <h2>{index + 1}</h2>
+      </section>
+
+      <div 
+        className='size-8 bg-[#70707050] rounded-[4px] relative'
+      >
+        <img
+          className='size-full rounded-[4px]'
+          src={thumbnail || "/src/assets/icons/blank.png"}
+          alt="Song icon"
+        />
+
+        {!thumbnail && (
+          <div className="animate-pulse absolute inset-0 flex items-center justify-center">
+            <SongSVG className='size-2 opacity-80 fill-ui-gray-100' />
+          </div>
+        )}
+      </div>
+
+      <section className='ml-4 overflow-hidden w-1/4'>
+        <h4 className='truncate leading-tight'>{song.name}</h4>
+        <h2 className='text-sm font-medium truncate leading-tight'>{song.artist.name}</h2>
+      </section>
+   
+      <section className='ml-6 overflow-hidden w-1/4'>
+        <h2 className='truncate leading-tight text-ui-gray-200 py-1'>{song.album?.name ?? ""}</h2>
+      </section>
+
+      <section className='ml-6 overflow-hidden w-1/12 text-center'>
+        <h2 className='truncate leading-tight text-ui-gray-200 py-1'>{durationFormat(song.duration ?? 0)}</h2>    
       </section>
     </div>
   );

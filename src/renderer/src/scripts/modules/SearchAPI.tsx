@@ -22,15 +22,14 @@ export default class SearchAPI {
   static setResults(data: Song[]): void {
     const $result_section = $("#center-section");
     if (!$result_section) return;
-
-    if (!root) {
-      root = ReactDOM.createRoot($result_section);
-    }
+    if (!root) root = ReactDOM.createRoot($result_section);
+    
+    root.render(null);
 
     root.render(
       <>
-        {data.map((song) => (
-          <SongItem key={song.videoId} song={song} />
+        {data.map((song, index) => (
+          <SongItem key={song.videoId} song={song} index={index}/>
         ))}
       </>
     );

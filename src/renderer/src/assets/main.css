@@ -5,6 +5,7 @@
   --color-ui-dark-150: #151515;
   --color-ui-dark-200: #020202;
   --color-ui-gray-100: #c8c8c8;
+  --color-ui-gray-200: #707070;
 }
 
 ::-webkit-scrollbar { width: 4px; }
@@ -25,6 +26,6 @@ dialog {
   scale: 0
 }
 
-
+audio { display: none; }
 
 /* * { outline: 1px solid red; } */

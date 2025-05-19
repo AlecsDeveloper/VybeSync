@@ -16,7 +16,7 @@ let root: ReactDOM.Root | null = null;
 
 export default class SearchAPI {
   static async getResults(query: string): Promise<void> {
-    window.electron.ipcRenderer.invoke("youtube:getResults", { query });
+    window.electron.ipcRenderer.invoke("music:getResults", { query });
   }
 
   static setResults(data: Song[]): void {

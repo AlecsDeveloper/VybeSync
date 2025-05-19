@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default function SongItem({ song, index }: Props): React.JSX.Element {
-  const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("youtube:getSource", { videoId: song.videoId });
+  const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("music:getSourceAudio", { videoId: song.videoId });
   const thumbnail = song.thumbnails[0]?.url;
 
   const [hasError, setHasError] = React.useState(false);

@@ -70,10 +70,10 @@ export default class PlayerAPI {
   }
 
   static generateControls(url: string): void {
-    const $player_bar = $("#player-bar");
-    if (!$player_bar) return;
+    const $auido_container = $("#audio-container");
+    if (!$auido_container) return;
 
-    $player_bar.innerHTML = "";
+    $auido_container.innerHTML = "";
 
     const audio = document.createElement("audio");
     audio.src = url;
@@ -81,7 +81,7 @@ export default class PlayerAPI {
     audio.setAttribute("autoplay", "");
     audio.setAttribute("loop", "");
 
-    $player_bar.appendChild(audio);
+    $auido_container.appendChild(audio);
   }
 
   static isInFullScreenMode(): boolean {

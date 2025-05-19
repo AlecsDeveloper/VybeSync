@@ -10,8 +10,9 @@ type Props = {
 
 export default function SongItem({ song, index }: Props): React.JSX.Element {
   const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("youtube:getSource", { videoId: song.videoId });
-
   const thumbnail = song.thumbnails[0]?.url;
+
+  const [hasError, setHasError] = React.useState(false);
 
   return (
     <div 
@@ -23,18 +24,17 @@ export default function SongItem({ song, index }: Props): React.JSX.Element {
         <h2>{index + 1}</h2>
       </section>
 
-      <div 
-        className='size-8 bg-[#70707050] rounded-[4px] relative'
-      >
+      <div className='size-8 bg-[#70707050] rounded-[4px] relative'>
         <img
           className='size-full rounded-[4px]'
-          src={thumbnail || "/src/assets/icons/blank.png"}
+          src={hasError ? "/src/assets/icons/blank.png" : thumbnail}
           alt="Song icon"
+          onError={() => setHasError(true)}
         />
 
-        {!thumbnail && (
+        {(hasError || !thumbnail) && (
           <div className="animate-pulse absolute inset-0 flex items-center justify-center">
-            <SongSVG className='size-2 opacity-80 fill-ui-gray-100' />
+            <SongSVG className='size-4 opacity-80 fill-ui-gray-100' />
           </div>
         )}
       </div>

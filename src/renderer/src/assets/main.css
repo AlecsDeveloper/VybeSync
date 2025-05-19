@@ -15,6 +15,7 @@
 
 
 dialog[open] {
+  z-index: 100;
   scale: 1;
   transition: scale .3s ease-in-out;
 

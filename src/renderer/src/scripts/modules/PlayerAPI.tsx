@@ -11,7 +11,15 @@ export type Format = {
   thumbnails: thumbnail[];
 };
 
-let root: ReactDOM.Root | null = null;
+// Mantener datos que nos permitirán reconstruir la vista
+let colorData: { R: number; G: number; B: number } | null = null;
+let currentSongData: { element: HTMLElement; thumbnails: thumbnail[] } | null = null;
+
+// Una raíz para cada sección
+let rightSectionRoot: ReactDOM.Root | null = null;
+let leftSectionRoot: ReactDOM.Root | null = null;
+
+// Caché para las imágenes
 const cache = new Map();
 
 export default class PlayerAPI {
@@ -23,17 +31,23 @@ export default class PlayerAPI {
 
     try {
       const image = await this.loadImage(imgElement.src, videoId);
-      const { R, G, B } = Color.getAverageColor(image, 4);
-      $("#right-section")?.setAttribute(
-        "style",
-        `background-image: linear-gradient(to bottom, rgb(${R}, ${G}, ${B}), #101010)`
-      );
+      colorData = Color.getAverageColor(image, 4);
     } catch (err) {
       console.warn("Failed to load image for color parsing:", err);
+      colorData = null;
     }
 
     this.generateControls(url);
-    this.generateView($song_element, thumbnails);
+
+    // Guardar los datos actuales
+    currentSongData = {
+      element: $song_element,
+      thumbnails
+    };
+
+    // Generar la vista y configurar el listener de redimensionamiento
+    this.updateView();
+    this.setupResizeListener();
   }
 
   static async loadImage(url: string, videoId: string): Promise<HTMLImageElement> {
@@ -75,20 +89,93 @@ export default class PlayerAPI {
     $player_bar.appendChild(audio);
   }
 
-  static generateView(songElement: HTMLElement, thumbnails: thumbnail[]): void {
-    const $view_section = $("#right-section");
-    if (!$view_section) return;
-    if (!root) root = ReactDOM.createRoot($view_section);
+  static isInFullScreenMode(): boolean {
+    return window.innerWidth >= 1024;
+  }
 
-    root.render(null);
+  static updateView(): void {
+    if (!currentSongData) return;
 
+    const { element: songElement, thumbnails } = currentSongData;
+    const isFullScreen = this.isInFullScreenMode();
+
+    // Determinar las secciones en función del tamaño de pantalla
+    const $targetSection = isFullScreen ? $("#right-section") : $("#left-section");
+    const $inactiveSection = isFullScreen ? $("#left-section") : $("#right-section");
+
+    if (!$targetSection || !$inactiveSection) {
+      console.warn("No se encontraron las secciones necesarias");
+      return;
+    }
+
+    // Inicializar las raíces si es necesario
+    if (isFullScreen && !rightSectionRoot && $targetSection) {
+      rightSectionRoot = ReactDOM.createRoot($targetSection);
+    } else if (!isFullScreen && !leftSectionRoot && $targetSection) {
+      leftSectionRoot = ReactDOM.createRoot($targetSection);
+    }
+
+    // Obtener la raíz activa
+    const activeRoot = isFullScreen ? rightSectionRoot : leftSectionRoot;
+    if (!activeRoot) return;
+
+    // Aplicar el gradiente a la sección activa
+    if (colorData) {
+      const { R, G, B } = colorData;
+      $targetSection.setAttribute(
+        "style",
+        `background-image: linear-gradient(to bottom, rgb(${R}, ${G}, ${B}), #101010)`
+      );
+
+      // Limpiar el estilo de la sección inactiva
+      $inactiveSection.removeAttribute("style");
+    }
+
+    // Preparar datos de la canción para el render
     const thumbIndex = thumbnails.length - 1;
     const thumbnail = thumbnails[thumbIndex]?.url;
     const title = songElement.querySelector("section:nth-of-type(2) h4")?.textContent?.trim() || "";
     const artist = songElement.querySelector("section:nth-of-type(2) h2")?.textContent?.trim() || "";
-    
-    root.render(
+
+    // Emitir el evento de cambio de canción
+    const songEvent = new CustomEvent('song-changed', {
+      detail: { thumbnail, title, artist }
+    });
+    window.dispatchEvent(songEvent);
+
+    // Renderizar en la sección activa
+    activeRoot.render(
       <SongDisplay thumbnail={thumbnail} title={title} artist={artist} />
     );
+
+    // Limpiar la sección inactiva
+    if (isFullScreen && leftSectionRoot) {
+      leftSectionRoot.render(null);
+    } else if (!isFullScreen && rightSectionRoot) {
+      rightSectionRoot.render(null);
+    }
+  }
+
+  // Variable para controlar si el listener ya está configurado
+  static resizeListenerSetup = false;
+
+  static setupResizeListener(): void {
+    if (this.resizeListenerSetup) return;
+
+    let resizeTimer: number | null = null;
+
+    const handleResize = (): void => {
+      if (resizeTimer !== null) {
+        clearTimeout(resizeTimer);
+      }
+
+      resizeTimer = window.setTimeout(() => {
+        this.updateView();
+        resizeTimer = null;
+      }, 150);
+    };
+
+    window.addEventListener('resize', handleResize);
+    this.resizeListenerSetup = true;
   }
 }

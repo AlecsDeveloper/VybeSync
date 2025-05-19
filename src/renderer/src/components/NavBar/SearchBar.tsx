@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import SearchSVG from '@assets/icons/SearchSVG.svg?react'
 import SearchAPI from '@scripts/modules/SearchAPI'
 
@@ -15,6 +15,20 @@ export default function SearchBar(): React.JSX.Element {
     e.preventDefault()
     handleSubmit()
   }
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Enter' && !e.repeat && document.activeElement !== document.querySelector('input[name="search"]')) {
+        handleSubmit()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [query])
 
   return (
     <form

@@ -11,15 +11,12 @@ export type Format = {
   thumbnails: thumbnail[];
 };
 
-// Mantener datos que nos permitirán reconstruir la vista
 let colorData: { R: number; G: number; B: number } | null = null;
 let currentSongData: { element: HTMLElement; thumbnails: thumbnail[] } | null = null;
 
-// Una raíz para cada sección
 let rightSectionRoot: ReactDOM.Root | null = null;
 let leftSectionRoot: ReactDOM.Root | null = null;
 
-// Caché para las imágenes
 const cache = new Map();
 
 export default class PlayerAPI {
@@ -39,13 +36,11 @@ export default class PlayerAPI {
 
     this.generateControls(url);
 
-    // Guardar los datos actuales
     currentSongData = {
       element: $song_element,
       thumbnails
     };
 
-    // Generar la vista y configurar el listener de redimensionamiento
     this.updateView();
     this.setupResizeListener();
   }
@@ -75,10 +70,10 @@ export default class PlayerAPI {
   }
 
   static generateControls(url: string): void {
-    const $player_bar = $("#player-bar");
-    if (!$player_bar) return;
+    const $auido_container = $("#audio-container");
+    if (!$auido_container) return;
 
-    $player_bar.innerHTML = "";
+    $auido_container.innerHTML = "";
 
     const audio = document.createElement("audio");
     audio.src = url;
@@ -86,7 +81,7 @@ export default class PlayerAPI {
     audio.setAttribute("autoplay", "");
     audio.setAttribute("loop", "");
 
-    $player_bar.appendChild(audio);
+    $auido_container.appendChild(audio);
   }
 
   static isInFullScreenMode(): boolean {
@@ -99,27 +94,27 @@ export default class PlayerAPI {
     const { element: songElement, thumbnails } = currentSongData;
     const isFullScreen = this.isInFullScreenMode();
 
-    // Determinar las secciones en función del tamaño de pantalla
-    const $targetSection = isFullScreen ? $("#right-section") : $("#left-section");
-    const $inactiveSection = isFullScreen ? $("#left-section") : $("#right-section");
+    const $leftSection = $("#left-section");
+    const $rightSection = $("#right-section");
 
-    if (!$targetSection || !$inactiveSection) {
+    const $leftPlayerArea = $("#left-player-area");
+    const $playlistArea = $("#playlist-area");
+
+    if (!$leftSection || !$rightSection) {
       console.warn("No se encontraron las secciones necesarias");
       return;
     }
 
-    // Inicializar las raíces si es necesario
-    if (isFullScreen && !rightSectionRoot && $targetSection) {
-      rightSectionRoot = ReactDOM.createRoot($targetSection);
-    } else if (!isFullScreen && !leftSectionRoot && $targetSection) {
-      leftSectionRoot = ReactDOM.createRoot($targetSection);
+    if (!rightSectionRoot && $rightSection) {
+      rightSectionRoot = ReactDOM.createRoot($rightSection);
     }
 
-    // Obtener la raíz activa
-    const activeRoot = isFullScreen ? rightSectionRoot : leftSectionRoot;
-    if (!activeRoot) return;
+    if (!leftSectionRoot && $leftPlayerArea) {
+      leftSectionRoot = ReactDOM.createRoot($leftPlayerArea);
+    }
 
-    // Aplicar el gradiente a la sección activa
+    const $targetSection = isFullScreen ? $rightSection : $leftSection;
+
     if (colorData) {
       const { R, G, B } = colorData;
       $targetSection.setAttribute(
@@ -127,36 +122,48 @@ export default class PlayerAPI {
         `background-image: linear-gradient(to bottom, rgb(${R}, ${G}, ${B}), #101010)`
       );
 
-      // Limpiar el estilo de la sección inactiva
-      $inactiveSection.removeAttribute("style");
+      if (isFullScreen) {
+        $leftSection.removeAttribute("style");
+      } else {
+        $rightSection.removeAttribute("style");
+      }
     }
 
-    // Preparar datos de la canción para el render
     const thumbIndex = thumbnails.length - 1;
     const thumbnail = thumbnails[thumbIndex]?.url;
     const title = songElement.querySelector("section:nth-of-type(2) h4")?.textContent?.trim() || "";
     const artist = songElement.querySelector("section:nth-of-type(2) h2")?.textContent?.trim() || "";
 
-    // Emitir el evento de cambio de canción
     const songEvent = new CustomEvent('song-changed', {
       detail: { thumbnail, title, artist }
     });
     window.dispatchEvent(songEvent);
 
-    // Renderizar en la sección activa
-    activeRoot.render(
-      <SongDisplay thumbnail={thumbnail} title={title} artist={artist} />
-    );
+    if (!isFullScreen) {
+      if ($leftPlayerArea) $leftPlayerArea.classList.remove("hidden");
+      if ($playlistArea) $playlistArea.classList.add("hidden");
 
-    // Limpiar la sección inactiva
-    if (isFullScreen && leftSectionRoot) {
-      leftSectionRoot.render(null);
-    } else if (!isFullScreen && rightSectionRoot) {
-      rightSectionRoot.render(null);
+      if (leftSectionRoot) {
+        leftSectionRoot.render(
+          <SongDisplay thumbnail={thumbnail} title={title} artist={artist} />
+        );
+      }
+
+      if (rightSectionRoot) {
+        rightSectionRoot.render(null);
+      }
+    } else {
+      if ($leftPlayerArea) $leftPlayerArea.classList.add("hidden");
+      if ($playlistArea) $playlistArea.classList.remove("hidden");
+
+      if (rightSectionRoot) {
+        rightSectionRoot.render(
+          <SongDisplay thumbnail={thumbnail} title={title} artist={artist} />
+        );
+      }
     }
   }
 
-  // Variable para controlar si el listener ya está configurado
   static resizeListenerSetup = false;
 
   static setupResizeListener(): void {

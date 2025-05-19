@@ -13,14 +13,14 @@ export default function SongDisplay({ thumbnail, title, artist }: Props): React.
       <div
         className='size-full bg-[#70707050] rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.75)] relative z-10 overflow-hidden'
       >
-        <img 
+        <img
           className='size-full rounded-2xl'
           src={thumbnail || "/src/assets/icons/blank.png"}
           alt="Song icon"
         />
 
         {!thumbnail && (
-          <div 
+          <div
             className="animate-pulse absolute inset-0 flex items-center justify-center"
           >
             <SongSVG className='size-40 opacity-80 fill-ui-gray-100' />

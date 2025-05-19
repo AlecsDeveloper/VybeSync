@@ -23,7 +23,7 @@ export default class SearchAPI {
     const $result_section = $("#center-section");
     if (!$result_section) return;
     if (!root) root = ReactDOM.createRoot($result_section);
-    
+
     root.render(null);
 
     root.render(

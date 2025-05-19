@@ -29,4 +29,6 @@ dialog {
 
 audio { display: none; }
 
+body { user-select: none; }
+
 /* * { outline: 1px solid red; } */

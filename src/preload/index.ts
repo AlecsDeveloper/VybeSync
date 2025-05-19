@@ -15,12 +15,12 @@ if (process.contextIsolated) {
       listeners[type]?.forEach(cb => cb(payload));
     });
 
-  contextBridge.exposeInMainWorld("vybesync", {
-    on: (type: string, callback: Callback) => {
-      if (!listeners[type]) listeners[type] = [];
-      listeners[type].push(callback);
-    }
-  });
+    contextBridge.exposeInMainWorld("vybesync", {
+      on: (type: string, callback: Callback) => {
+        if (!listeners[type]) listeners[type] = [];
+        listeners[type].push(callback);
+      }
+    });
 
   } catch (error) {
     console.error(error)

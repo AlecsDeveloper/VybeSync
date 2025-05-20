@@ -48,6 +48,12 @@ function setActivity(): void {
     state: 'Hearing Music with VybeSync',
     startTimestamp,
     instance: false,
+    buttons: [
+      {
+        url: "https://github.com/AlecsDeveloper/VybeSync",
+        label: "Check VybeSync!"
+      }
+    ]
   });
 }
 

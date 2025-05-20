@@ -1,6 +1,7 @@
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow } from "electron"
 import { createMainWindow } from './window/mainWindow'
+import { initDiscord, destroyDiscord } from './rich-presence';
 
 
 // App initialization
@@ -15,9 +16,12 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
   })
+
+  initDiscord();
 })
 
 app.on('window-all-closed', () => {
   if (process.platform === 'darwin') return;
+  destroyDiscord();
   app.quit()
 })

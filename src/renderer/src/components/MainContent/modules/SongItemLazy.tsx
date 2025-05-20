@@ -1,16 +1,18 @@
 import React from 'react'
-import type { Song } from "@scripts/modules/SearchAPI";
+import type { T_ALBUM, T_SONG } from "@scripts/modules/SearchAPI";
 import { durationFormat } from '@renderer/lib/Utils';
 import SongSVG from "@assets/icons/Song.svg?react"
 
 type Props = {
-  song: Song;
+  song: T_SONG;
+  album: T_ALBUM;
   index: number;
 };
 
-export default function SongItem({ song, index }: Props): React.JSX.Element {
-  const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("music:getSourceAudio", { videoId: song.videoId });
-  const thumbnail = song.thumbnails[0]?.url;
+export default function SongItemLazy({ song, album, index }: Props): React.JSX.Element {
+  const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("music_bulk:getSourceAudio", { videoId: song.videoId, albumId: album.albumId });
+ 
+  const thumbnail = album.albumThumbnails[0]?.url;
 
   const [hasError, setHasError] = React.useState(false);
 
@@ -41,11 +43,11 @@ export default function SongItem({ song, index }: Props): React.JSX.Element {
 
       <section className='ml-4 overflow-hidden w-1/4'>
         <h4 className='truncate leading-tight'>{song.name}</h4>
-        <h2 className='text-sm font-medium truncate leading-tight'>{song.artist.name}</h2>
+        <h2 className='text-sm font-medium truncate leading-tight'>{album.albumBasicinfo.artist.name}</h2>
       </section>
    
       <section className='ml-6 overflow-hidden w-1/4'>
-        <h2 className='truncate leading-tight text-ui-gray-200 py-1'>{song.album?.name ?? ""}</h2>
+        <h2 className='truncate leading-tight text-ui-gray-200 py-1'>{album.albumBasicinfo.name ?? ""}</h2>
       </section>
 
       <section className='ml-6 overflow-hidden w-1/12 text-center'>

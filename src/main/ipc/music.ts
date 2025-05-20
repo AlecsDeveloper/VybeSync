@@ -3,6 +3,7 @@ import YTMusic from "ytmusic-api";
 import { ipcMain } from "electron";
 import { mainWindow } from "../window/mainWindow";
 import { FormatOptions } from "youtubei.js/dist/src/types";
+import { Format } from "youtubei.js/dist/src/parser/misc";
 
 
 export class MusicIPC {
@@ -30,41 +31,26 @@ export class MusicIPC {
     });
   }
 
-  static async getSourceAudio(videoId: string): Promise<void> {
-    if (!this.INNERTUBE) return;
-
+  static async getSourceAudio(videoId: string, send: boolean = true): Promise<Format | null> {
     await this.LoadAPI();
 
+    if (!this.INNERTUBE) return null;
     
     const formatOptions: FormatOptions = { type: "audio", client: "WEB_EMBEDDED", }
     const res = await this.INNERTUBE.getStreamingData(videoId, formatOptions);
   
-    const thumbnails = (await this.API.getSong(videoId)).thumbnails;
+    if (send) {
+      const thumbnails = (await this.API.getSong(videoId)).thumbnails;
   
-    mainWindow.webContents.send("vybesync:event", {
-      type: "pushSong",
-      payload: { ...res, thumbnails: thumbnails, videoId },
-    });
+      mainWindow.webContents.send("vybesync:event", {
+        type: "pushSong",
+        payload: { ...res, thumbnails: thumbnails, videoId },
+      });
+    }
+
+    return res;
   }
 }
 
 ipcMain.handle("music:getResults", (_, args: { query: string }) => MusicIPC.getResults(args.query));
 ipcMain.handle("music:getSourceAudio", (_, args: { videoId: string }) => MusicIPC.getSourceAudio(args.videoId));
-
-
-// ipcMain.handle("youtube:getAlbumResults", async (_, args: { query: string }) => {
-//   await LoadAPI();
-
-//   const albums = await ytmusic.searchAlbums(args.query);
-//   const allSongs: unknown[] = [];
-
-//   for (const album of albums) {
-//     const albumDetails = await ytmusic.getAlbum(album.albumId);
-//     allSongs.push(...albumDetails.songs);
-//   }
-
-//   mainWindow.webContents.send("vybesync:event", {
-//     type: "setResults",
-//     payload: allSongs,
-//   });
-// });

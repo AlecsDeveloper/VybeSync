@@ -8,6 +8,8 @@ type Props = {
 };
 
 export default function SongDisplay({ thumbnail, title, artist }: Props): React.JSX.Element {
+  const [hasError, setHasError] = React.useState(false);
+
   return (
     <div>
       <div
@@ -15,14 +17,13 @@ export default function SongDisplay({ thumbnail, title, artist }: Props): React.
       >
         <img
           className='size-full rounded-2xl'
-          src={thumbnail || "/src/assets/icons/blank.png"}
+          src={hasError ? "/src/assets/icons/blank.png" : thumbnail}
           alt="Song icon"
+          onError={() => setHasError(true)}
         />
 
-        {!thumbnail && (
-          <div
-            className="animate-pulse absolute inset-0 flex items-center justify-center"
-          >
+        {(hasError || !thumbnail) && (
+          <div className="animate-pulse absolute inset-0 flex items-center justify-center">
             <SongSVG className='size-40 opacity-80 fill-ui-gray-100' />
           </div>
         )}

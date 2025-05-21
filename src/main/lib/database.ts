@@ -10,7 +10,8 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS thumbnails (
     album_id TEXT PRIMARY KEY,
     low_thumb TEXT NOT NULL,   -- base64
-    high_thumb TEXT NOT NULL   -- base64
+    high_thumb TEXT NOT NULL,  -- base64
+    rpc_thumb TEXT NOT NULL    -- base64
   );
 
   CREATE TABLE IF NOT EXISTS songs (
@@ -27,22 +28,43 @@ db.exec(`
   );
 `);
 
-export async function insertThumbnail(albumId: string, lowThumb: string, highThumb: string): Promise<void> {
-  if (!lowThumb || !highThumb) {
-    console.warn(`Fallo la descarga para el albumId: ${albumId}`);
+export async function insertThumbnail(albumId: string, lowThumb: string, highThumb: string, rpcThumbUrl: string): Promise<void> {
+  const idMatch = rpcThumbUrl.match(/lh3\.googleusercontent\.com\/([^=]+)/);
+  if (!idMatch) {
+    console.warn(`Invalid data in rpc_thumb: ${rpcThumbUrl}`);
+    return;
+  }
+
+  const rpcThumbId = idMatch[1];
+
+  if (!lowThumb || !highThumb || !rpcThumbId) {
+    console.warn(`Missing data in the album: ${albumId}`);
     return;
   }
 
   const stmt = db.prepare(`
-    INSERT OR REPLACE INTO thumbnails (album_id, low_thumb, high_thumb)
-    VALUES (?, ?, ?)
+    INSERT OR REPLACE INTO thumbnails (album_id, low_thumb, high_thumb, rpc_thumb)
+    VALUES (?, ?, ?, ?)
   `);
 
-  stmt.run(albumId, lowThumb, highThumb);
+  stmt.run(albumId, lowThumb, highThumb, rpcThumbId);
 }
 
-type THUMBNAILS_TABLE = { album_id: string, low_thumb: string, high_thumb: string } | undefined
-export function getThumbnails(albumId: string): THUMBNAILS_TABLE {
+export function getThumbnails(albumId: string): THUMBNAILS_TABLE | undefined {
   const stmt = db.prepare(`SELECT * FROM thumbnails WHERE album_id = ?`);
-  return stmt.get(albumId) as THUMBNAILS_TABLE
+  const row = stmt.get(albumId) as THUMBNAILS_TABLE;
+
+  if (!row) return undefined;
+
+  return {
+    ...row,
+    rpc_thumb: `https://lh3.googleusercontent.com/${row.rpc_thumb}=w60-h60-l90-rj`
+  };
 }
+
+type THUMBNAILS_TABLE = {
+  album_id: string,
+  low_thumb: string,
+  high_thumb: string,
+  rpc_thumb: string
+} | undefined;

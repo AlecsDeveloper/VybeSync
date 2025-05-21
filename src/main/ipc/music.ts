@@ -2,9 +2,6 @@ import { Innertube, UniversalCache } from "youtubei.js";
 import YTMusic from "ytmusic-api";
 import { ipcMain } from "electron";
 import { mainWindow } from "../window/mainWindow";
-import { FormatOptions } from "youtubei.js/dist/src/types";
-import { Format } from "youtubei.js/dist/src/parser/misc";
-
 
 export class MusicIPC {
   private static API: YTMusic = new YTMusic();
@@ -39,13 +36,12 @@ export class MusicIPC {
     mainWindow.webContents.send("music:playlistSearchResults", res);
   }
 
-  static async getSourceAudio(videoId: string, send: boolean = true): Promise<Format | null> {
+  static async getSourceAudio(videoId: string, send: boolean = true): Promise<unknown> {
     await this.LoadAPI();
 
     if (!this.INNERTUBE) return null;
 
-    const formatOptions: FormatOptions = { type: "audio", client: "WEB_EMBEDDED", }
-    const res = await this.INNERTUBE.getStreamingData(videoId, formatOptions);
+    const res = await this.INNERTUBE.getStreamingData(videoId, { type: "audio", client: "WEB_EMBEDDED", });
 
     if (send) {
       const thumbnails = (await this.API.getSong(videoId)).thumbnails;

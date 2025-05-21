@@ -28,7 +28,7 @@ export default class SearchAPI {
     if (!$result_section) return;
     if (!root) root = ReactDOM.createRoot($result_section);
 
-    let index = 0;
+    let index = -1;
     root.render(
       <>
         {albums.map((album) =>

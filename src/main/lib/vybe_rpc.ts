@@ -1,5 +1,6 @@
 import net from "node:net";
 import os from "node:os";
+import fs from "node:fs"
 import { EventEmitter } from "node:events";
 
 // Client 
@@ -12,7 +13,7 @@ export class Client {
   // Missing Data
   private ClientID: string;
   private SocketPath: string;
-  private Socket: net.Socket;
+  private Socket: net.Socket | null = null;
   private EventTracker: EventEmitter = new EventEmitter();
   private Ready = false;
   private QueuedActivity: Presence | null = null;
@@ -28,11 +29,22 @@ export class Client {
         ? "\\\\.\\pipe\\discord-ipc-0"
         : `${os.tmpdir()}/discord-ipc-0`;
 
-    this.Socket = net.createConnection(this.SocketPath, this.setConnection);
-    this.listenConection(this.EventON);
+    try {
+      if (!fs.existsSync(this.SocketPath)) {
+        console.warn("Discord is not running. Rich Presence will be disabled.");
+        return;
+      }
+
+      this.Socket = net.createConnection(this.SocketPath, this.setConnection);
+      this.listenConection(this.EventON);
+    } catch (err) {
+      console.error("Failed to connect to Discord IPC:", err);
+    }
+
   }
 
   private setConnection = (): void => {
+    if (!this.Socket) return;
     const PayLoad = this.encode(Client.OPCODES.HANDSHAKE, {
       v: Client.VERSION,
       client_id: this.ClientID,
@@ -41,6 +53,7 @@ export class Client {
   };
 
   private listenConection(callback: (op: number, data: Record<string, unknown> | undefined) => void): void {
+    if (!this.Socket) return;
     this.Socket.on("data", (chunk) => {
       const { op, data } = this.decode(chunk);
       callback(op, data);
@@ -48,7 +61,7 @@ export class Client {
   }
 
   private EventON = (op: number, data: Record<string, unknown> | undefined): void => {
-    if (!data) return;
+    if (!data || !this.Socket) return;
     else if (
       op !== Client.OPCODES.FRAME ||
       data.cmd !== "DISPATCH" ||
@@ -59,7 +72,7 @@ export class Client {
     this.Ready = true;
 
     this.EventTracker.on("SET_ACTIVITY", (activity) => {
-      if (!this.Ready) return;
+      if (!this.Ready || !this.Socket) return;
 
       const packet = this.encode(Client.OPCODES.FRAME, {
         cmd: "SET_ACTIVITY",

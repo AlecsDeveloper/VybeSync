@@ -5,5 +5,5 @@
 
 ---
 
-## Current player view:
+## Current app view:
 ![Player Preview](/docs/preview.png)

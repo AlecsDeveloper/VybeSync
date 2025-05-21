@@ -1,4 +1,7 @@
 {
   "files": [],
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+  },
   "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }]
 }

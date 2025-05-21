@@ -1,6 +1,7 @@
 import "./windows"
 import "./lib/database"
-import "./rich-presence"
+// import "./rich-presence"
 // ipcs 
 import "./ipc/music"
 import "./ipc/music_bulk"
+import "./ipc/rich_presence"

@@ -24,7 +24,12 @@ class MusicBulkIPC {
         const LowThumb_URL_B64 = LowThumb_B64 ? LowThumb_B64 : thumbnails[0].url;
         const HighThumb_URL_B64 = HighThumb_B64 ? HighThumb_B64 : thumbnails[3].url;
 
-        DataBase.insertThumbnail(album.albumId, LowThumb_B64 || "", HighThumb_B64 || "");
+        DataBase.insertThumbnail(
+          album.albumId, 
+          LowThumb_B64 || "", 
+          HighThumb_B64 || "",
+          thumbnails[0].url || ""
+        );
 
         album.albumThumbnails[0].url = LowThumb_URL_B64;
         album.albumThumbnails[3].url = HighThumb_URL_B64;
@@ -54,6 +59,10 @@ class MusicBulkIPC {
       {
         url: DB_Thumbnails.high_thumb,
         width: 522, height: 522 
+      },
+      {
+        url: DB_Thumbnails.rpc_thumb,
+        width: 60, height: 60 
       }
     ] : []
 

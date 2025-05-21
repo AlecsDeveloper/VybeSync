@@ -2,6 +2,7 @@ import SongDisplay from "@components/MainContent/modules/SongDisplay";
 import Color from "@lib/Color";
 import { $ } from "@lib/Utils";
 import ReactDOM from "react-dom/client";
+import ControlsAPI from "./ControlsAPI";
 
 export type thumbnail = { url: string; width: number; height: number; }
 export type Format = {
@@ -34,7 +35,7 @@ export default class PlayerAPI {
       colorData = null;
     }
 
-    this.generateControls(url);
+    ControlsAPI.generateControls(url);
 
     currentSongData = {
       element: $song_element,
@@ -67,21 +68,6 @@ export default class PlayerAPI {
         img.onerror = reject;
       });
     }
-  }
-
-  static generateControls(url: string): void {
-    const $auido_container = $("#audio-container");
-    if (!$auido_container) return;
-
-    $auido_container.innerHTML = "";
-
-    const audio = document.createElement("audio");
-    audio.src = url;
-    audio.setAttribute("controls", "");
-    audio.setAttribute("autoplay", "");
-    audio.setAttribute("loop", "");
-
-    $auido_container.appendChild(audio);
   }
 
   static isInFullScreenMode(): boolean {
@@ -129,10 +115,11 @@ export default class PlayerAPI {
       }
     }
 
-    const thumbIndex = thumbnails.length - 1;
-    const thumbnail = thumbnails[thumbIndex]?.url;
+    const thumbnail = thumbnails[1]?.url;
+    const album_thumbnail = thumbnails[2]?.url;
     const title = songElement.querySelector("section:nth-of-type(2) h4")?.textContent?.trim() || "";
     const artist = songElement.querySelector("section:nth-of-type(2) h2")?.textContent?.trim() || "";
+    const album = songElement.querySelector("section:nth-of-type(3) h2")?.textContent?.trim() || "";
 
     const songEvent = new CustomEvent('song-changed', {
       detail: { thumbnail, title, artist }
@@ -145,7 +132,7 @@ export default class PlayerAPI {
 
       if (leftSectionRoot) {
         leftSectionRoot.render(
-          <SongDisplay thumbnail={thumbnail} title={title} artist={artist} />
+          <SongDisplay thumbnail={thumbnail} title={title} artist={artist} album={album} album_thumbnail={album_thumbnail}/>
         );
       }
 
@@ -158,10 +145,12 @@ export default class PlayerAPI {
 
       if (rightSectionRoot) {
         rightSectionRoot.render(
-          <SongDisplay thumbnail={thumbnail} title={title} artist={artist} />
+          <SongDisplay thumbnail={thumbnail} title={title} artist={artist} album={album} album_thumbnail={album_thumbnail}/>
         );
       }
     }
+
+    ControlsAPI.generateSongPreview(thumbnail, title, artist);
   }
 
   static resizeListenerSetup = false;

@@ -1,8 +1,7 @@
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow } from "electron"
 import { createMainWindow } from './window/mainWindow'
-import { initDiscord, destroyDiscord } from './rich-presence';
-
+import { RichPresenceAPI } from './ipc/rich_presence'
 
 // App initialization
 app.whenReady().then(() => {
@@ -17,11 +16,11 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
   })
 
-  initDiscord();
+  RichPresenceAPI.StartRPC();
 })
 
 app.on('window-all-closed', () => {
   if (process.platform === 'darwin') return;
-  destroyDiscord();
+  RichPresenceAPI.RemoveRPC();
   app.quit()
 })

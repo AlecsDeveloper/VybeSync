@@ -5,7 +5,7 @@ import SearchAPI from '@renderer/scripts/modules/SearchAPI'
 
 export default function HomeButton(): React.JSX.Element {
   const handleHomeNavigation = (): void => {
-    SearchAPI.setResults([]);
+    SearchAPI.setResultsLazy([]);
 
     const searchInput = $("input[type='text']") as HTMLInputElement | null;
     if (searchInput) {

@@ -8,15 +8,27 @@ type Props = {
   song: T_SONG;
   album: T_ALBUM;
   index: number;
+  liked: boolean;
 };
 
-export default function SongItemLazy({ song, album, index }: Props): React.JSX.Element {
+export default function SongItemLazy({ song, album, index, liked }: Props): React.JSX.Element {
   const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("music_bulk:getSourceAudio", { videoId: song.videoId, albumId: album.albumId });
  
   const thumbnail = album.albumThumbnails[0]?.url;
 
   const [ hasError, setHasError ] = React.useState(false);
-  const [ isLiked, setIsLiked ] = React.useState(false);
+  const [ isLiked, setIsLiked ] = React.useState(liked);
+
+  const handleLike = (like: boolean): void => {
+    if (!like) window.electron.ipcRenderer.invoke("song:deleteSong", song.videoId);
+
+    else window.electron.ipcRenderer.invoke("song:saveSong", { 
+      video_id: song.videoId,
+      song_name: song.name,
+      album_id: album.albumId,
+      duration: song.duration
+    });
+  }
 
   return (
     <div 
@@ -61,6 +73,7 @@ export default function SongItemLazy({ song, album, index }: Props): React.JSX.E
         onClick={(e) => {
           e.stopPropagation();
           setIsLiked(!isLiked);
+          handleLike(!isLiked);
         }}
       >
         <HeartSVG

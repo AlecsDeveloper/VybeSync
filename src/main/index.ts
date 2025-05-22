@@ -1,7 +1,9 @@
+// base
 import "./windows"
 import "./lib/database"
-// import "./rich-presence"
+
 // ipcs 
+import "./ipc/song"
 import "./ipc/music"
 import "./ipc/music_bulk"
 import "./ipc/rich_presence"

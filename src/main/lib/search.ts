@@ -1,4 +1,5 @@
 import YTMusic, { AlbumDetailed, SongDetailed } from "ytmusic-api";
+import * as DataBase from "./database"
 
 type T_ALBUM = {
   albumId: string;
@@ -26,6 +27,7 @@ type T_SONG = {
   name: string;
   duration: number | null;
   albumId: string | null;
+  liked: boolean
 }
 
 
@@ -35,11 +37,14 @@ async function getAlbumSongs(albumId: string, API: YTMusic): Promise<SongDetaile
 
 async function parseAlbum(album: AlbumDetailed, API: YTMusic): Promise<T_ALBUM> {
   const albumSongs = (await getAlbumSongs(album.albumId, API)).map((song) => {
+    const isLiked = DataBase.existsSong(song.videoId) || false;
+
     return {
       videoId: song.videoId,
       name: song.name,
       duration: song.duration,
-      albumId: song.album?.albumId
+      albumId: song.album?.albumId,
+      liked: isLiked
     }
   });
 

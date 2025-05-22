@@ -40,6 +40,7 @@ export default class SearchAPI {
                 song={song}
                 album={album}
                 index={index}
+                liked={song.liked}
               />
             )
           })
@@ -77,4 +78,5 @@ export type T_SONG = {
   name: string;
   duration: number | null;
   albumId: string | null;
+  liked: boolean
 }

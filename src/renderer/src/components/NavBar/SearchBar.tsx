@@ -28,12 +28,12 @@ export default function SearchBar(): React.JSX.Element {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [query])
+  })
 
   return (
     <form
       onSubmit={handleFormSubmit}
-      className="flex items-center justify-center w-1/4 h-[80%] px-5 bg-ui-dark-100 border rounded-[24px]"
+      className="flex items-center justify-center w-1/4 h-[80%] px-5 bg-ui-dark-100 border rounded-[24px] transition-colors outline-2 hover:outline-zinc-300"
     >
       <input
         type="text"

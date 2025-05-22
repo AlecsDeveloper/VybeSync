@@ -17,9 +17,13 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS songs (
     video_id TEXT PRIMARY KEY,
     song_name TEXT NOT NULL,
-    artist_name TEXT NOT NULL,
     album_id TEXT NOT NULL,
     duration INTEGER
+  );
+
+  CREATE TABLE IF NOT EXISTS artists (
+    artist_id TEXT PRIMARY KEY,
+    artist_name TEXT NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS albums (
@@ -28,6 +32,50 @@ db.exec(`
   );
 `);
 
+
+// Songs
+export async function insertSong(videoId: string, songName: string, albumId: string, duration: number): Promise<void> {
+  const stmt = db.prepare(`
+    INSERT OR REPLACE INTO songs (video_id, song_name, album_id, duration)
+    VALUES (?, ?, ?, ?)
+  `);
+
+  stmt.run(videoId, songName, albumId, duration);
+}
+
+export function getSong(videoId: string): SONGS_TABLE {
+  const stmt = db.prepare(`SELECT * FROM thumbnails WHERE album_id = ?`);
+  const row = stmt.get(videoId) as SONGS_TABLE;
+
+  return row
+}
+
+export function deleteSong(videoId: string): void {
+  const stmt = db.prepare(`DELETE FROM songs WHERE video_id = ?`);
+  stmt.run(videoId);
+}
+
+
+export function existsSong(videoId: string): boolean {
+  const stmt = db.prepare(`SELECT 1 FROM songs WHERE video_id = ? LIMIT 1`);
+  const row = stmt.get(videoId);
+  return !!row;
+}
+
+
+export type SONGS_TABLE = {
+  video_id: string;
+  song_name: string;
+  album_id: string;
+  duration: number;
+} | undefined
+
+
+
+
+
+
+// Thumbnails
 export async function insertThumbnail(albumId: string, lowThumb: string, highThumb: string, rpcThumbUrl: string): Promise<void> {
   const idMatch = rpcThumbUrl.match(/lh3\.googleusercontent\.com\/([^=]+)/);
   if (!idMatch) {
@@ -50,7 +98,7 @@ export async function insertThumbnail(albumId: string, lowThumb: string, highThu
   stmt.run(albumId, lowThumb, highThumb, rpcThumbId);
 }
 
-export function getThumbnails(albumId: string): THUMBNAILS_TABLE | undefined {
+export function getThumbnails(albumId: string): THUMBNAILS_TABLE {
   const stmt = db.prepare(`SELECT * FROM thumbnails WHERE album_id = ?`);
   const row = stmt.get(albumId) as THUMBNAILS_TABLE;
 

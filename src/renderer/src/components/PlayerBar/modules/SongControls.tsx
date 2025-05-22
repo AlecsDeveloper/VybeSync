@@ -74,44 +74,73 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
   const formatTime = (t: number): string =>
     `${Math.floor(t / 60).toString().padStart(2, '0')}:${Math.floor(t % 60).toString().padStart(2, '0')}`
 
+  const iconBase = "size-4 transition-colors duration-200 hover:brightness-125"
+  const iconStatic = "fill-ui-gray-100 " + iconBase;
+ 
   return (
     <div className="w-full h-full flex flex-col text-white">
 
-      {/* Main Controls */}
       <section className="w-full flex items-center justify-center gap-8">
 
-        {/* Shufle button */}
-        <button onClick={shufle} title="Enable Shufle">
-          <ShufleSVG className={`size-4 transition-colors duration-200 ${isShufle ? 'fill-green-400' : 'fill-ui-gray-100'}`} />
+        {/* Shuffle */}
+        <button
+          onClick={shufle}
+          title="Enable Shuffle"
+          aria-label="Enable Shuffle"
+          className={`${iconBase} ${isShufle ? 'fill-ui-pink-100' : 'fill-ui-gray-100'}`}
+        >
+          <ShufleSVG className="size-4" />
         </button>
-        
-        <section className='flex items-center justify-center gap-4'>
-          {/* Previus button */}
-          <button onClick={() => skip(-10)} title="Rewind 10s">
-            <PrevSVG className='size-4 fill-ui-gray-100'/>
-          </button>
-          
-          {/* Play/Pause button */}
-          <button onClick={togglePlay} title="Play/Pause">
-            {isPlaying 
-              ? <PauseSVG className='size-6 fill-ui-gray-100'/> 
-              : <PlaySVG className='size-6 fill-ui-gray-100'/>
-            }
+
+        {/* Main controls */}
+        <div className="flex items-center gap-4">
+          {/* Prev */}
+          <button
+            onClick={() => skip(-10)}
+            title="Rewind 10s"
+            aria-label="Rewind 10 seconds"
+            className={iconStatic}
+          >
+            <PrevSVG className="size-4" />
           </button>
 
-          {/* Next button */}
-          <button onClick={() => skip(10)} title="Forward 10s">
-            <NextSVG className='size-4 fill-ui-gray-100'/>
+          {/* Play/Pause */}
+          <button
+            onClick={togglePlay}
+            title="Play/Pause"
+            aria-label="Play or Pause"
+            className="size-6 fill-ui-gray-100 transition-colors duration-200 hover:brightness-125"
+          >
+            {isPlaying ? (
+              <PauseSVG className="size-6" />
+            ) : (
+              <PlaySVG className="size-6" />
+            )}
           </button>
-        </section>
 
+          {/* Next */}
+          <button
+            onClick={() => skip(10)}
+            title="Forward 10s"
+            aria-label="Forward 10 seconds"
+            className={iconStatic}
+          >
+            <NextSVG className="size-4" />
+          </button>
+        </div>
 
-        {/* Repeat button */}
-        <button onClick={repeat} title="Enable Loop">
-          <RepeatSVG className={`size-4 transition-colors duration-200 ${isRepeat ? 'fill-green-400' : 'fill-ui-gray-100'}`} />
+        {/* Repeat */}
+        <button
+          onClick={repeat}
+          title="Enable Loop"
+          aria-label="Enable Loop"
+          className={`${iconBase} ${isRepeat ? 'fill-ui-pink-100' : 'fill-ui-gray-100'}`}
+        >
+          <RepeatSVG className="size-4" />
         </button>
 
       </section>
+
 
       {/* Player time line */}
       <section className="w-full h-full flex items-center justify-center gap-4">
@@ -132,12 +161,12 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
             [&::-webkit-slider-thumb]:w-3
             [&::-webkit-slider-thumb]:h-3
             [&::-webkit-slider-thumb]:rounded-full
-            [&::-webkit-slider-thumb]:bg-green-400
+            [&::-webkit-slider-thumb]:bg-ui-pink-100
             [&::-webkit-slider-thumb]:mt-[-4px]
             focus:outline-none
           "
           style={{
-            background: `linear-gradient(to right, #34d399 ${((currentTime / duration) * 100) || 0}%, #e5e7eb ${((currentTime / duration) * 100) || 0}%)`
+            background: `linear-gradient(to right, #be5feb, #fb64b6, #ff6666 ${((currentTime / duration) * 100) || 0}%, #e5e7eb ${((currentTime / duration) * 100) || 0}%)`
           }}
         />
 

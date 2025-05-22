@@ -1,11 +1,17 @@
 @import "tailwindcss";
 
 @theme {
+  /* UI Layout Colors */
   --color-ui-dark-100: #101010;
   --color-ui-dark-150: #151515;
   --color-ui-dark-200: #020202;
+  /* UI Text Colors */
   --color-ui-gray-100: #c8c8c8;
   --color-ui-gray-200: #707070;
+  /* UI Dynamic Component Colors */
+  --color-ui-pink-100: #fb64b6;
+  --color-ui-purple-100: #be5feb;
+  --color-ui-red-100: #ff6666;
 }
 
 ::-webkit-scrollbar { width: 4px; }

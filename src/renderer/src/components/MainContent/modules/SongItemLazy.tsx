@@ -2,6 +2,7 @@ import React from 'react'
 import type { T_ALBUM, T_SONG } from "@scripts/modules/SearchAPI";
 import { durationFormat } from '@renderer/lib/Utils';
 import SongSVG from "@assets/icons/Song.svg?react"
+import HeartSVG from "@assets/icons/songs/HeartSVG.svg?react"
 
 type Props = {
   song: T_SONG;
@@ -14,13 +15,14 @@ export default function SongItemLazy({ song, album, index }: Props): React.JSX.E
  
   const thumbnail = album.albumThumbnails[0]?.url;
 
-  const [hasError, setHasError] = React.useState(false);
+  const [ hasError, setHasError ] = React.useState(false);
+  const [ isLiked, setIsLiked ] = React.useState(false);
 
   return (
     <div 
       id={song.videoId} 
       onClick={handleClickButton}
-      className="w-[calc(100%-16px)] h-12 bg-transparent rounded-[12px] border-none mx-auto text-ui-gray-100 hover:bg-ui-dark-150 flex items-center"
+      className="w-[calc(100%-16px)] h-12 bg-transparent rounded-[12px] border-none mx-auto text-ui-gray-100 hover:bg-ui-dark-150 flex items-center [&>.like-btn]:stroke-0 hover:[&>.like-btn]:stroke-2"
     >
       <section className='w-12 flex items-center justify-center font-mono text-sm'>
         <h2>{index + 1}</h2>
@@ -53,6 +55,22 @@ export default function SongItemLazy({ song, album, index }: Props): React.JSX.E
       <section className='ml-6 overflow-hidden w-1/12 text-center'>
         <h2 className='truncate leading-tight text-ui-gray-200 py-1'>{durationFormat(song.duration ?? 0)}</h2>    
       </section>
+
+      <button
+        className='like-btn ml-8 size-6 flex items-center justify-center'
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsLiked(!isLiked);
+        }}
+      >
+        <HeartSVG
+          className={`like-btn size-5 transition-all duration-200 hover:brightness-125 ${
+            isLiked
+              ? 'fill-ui-pink-100 stroke-transparent'
+              : 'fill-transparent stroke-ui-gray-100'
+          }`}
+        />
+      </button>
     </div>
   );
 }

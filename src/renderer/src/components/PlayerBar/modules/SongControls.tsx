@@ -1,22 +1,34 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 import PlaySVG from "@assets/icons/player/PlaySVG.svg?react";
 import PauseSVG from "@assets/icons/player/PauseSVG.svg?react";
 import PrevSVG from "@assets/icons/player/PrevSVG.svg?react";
 import NextSVG from "@assets/icons/player/NextSVG.svg?react";
 import RepeatSVG from "@assets/icons/player/RepeatSVG.svg?react";
-import ShufleSVG from "@assets/icons/player/ShufleSVG.svg?react";
+import ShuffleSVG from "@assets/icons/player/ShuffleSVG.svg?react";
+import QueueAPI from '@renderer/scripts/modules/QueueAPI';
 
 type Props = {
   audioElement: HTMLAudioElement;
 }
 
 export default function SongControls({ audioElement }: Props): React.JSX.Element {
-  const [ isPlaying, setIsPlaying ] = useState(false);
-  const [ isRepeat, setIsRepeat ] = useState(false);
-  const [ isShufle, setIsShufle ] = useState(false);
-  const [ currentTime, setCurrentTime ] = useState(0);
-  const [ duration, setDuration ] = useState(0);
+  const config = window.config.get() as { repeat?: boolean; shuffle?: boolean };
+  const configShuffle = config.shuffle ?? false;
+  const configRepeat = config.repeat ?? false;
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isRepeat, setIsRepeat] = useState(configRepeat);
+  const [isShuffle, setIsShuffle] = useState(configShuffle);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const repeatRef = useRef(isRepeat);
+
+  // sync ref con el estado
+  useEffect(() => {
+    repeatRef.current = isRepeat;
+  }, [isRepeat]);
 
   useEffect(() => {
     const updateTime = (): void => setCurrentTime(audioElement.currentTime);
@@ -25,15 +37,15 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
     const handlePlay = (): void => setIsPlaying(true);
     const handlePause = (): void => setIsPlaying(false);
 
-    const handleEnd = (): Promise<void> => window.electron.ipcRenderer.invoke("rpc:updateSongData", undefined);
+    const handleEnd = (): void => {
+      QueueAPI.playNext(repeatRef.current);
+    };
 
     audioElement.addEventListener('timeupdate', updateTime);
     audioElement.addEventListener('loadedmetadata', updateDuration);
     audioElement.addEventListener('play', handlePlay);
     audioElement.addEventListener('pause', handlePause);
     audioElement.addEventListener('ended', handleEnd);
-
-    setIsPlaying(true);
 
     return () => {
       audioElement.removeEventListener('timeupdate', updateTime);
@@ -45,30 +57,36 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
   }, [audioElement]);
 
   const togglePlay = (): void => {
-    if (audioElement.paused) {
-      audioElement.play();
-    } else {
-      audioElement.pause();
-    }
+    if (!isPlaying) audioElement.play();
+    else audioElement.pause();
   }
 
-  const skip = (seconds: number): void => {
-    audioElement.currentTime = Math.min(Math.max(audioElement.currentTime + seconds, 0), duration)
+  const prevSong = (): void => {
+    QueueAPI.playPrev(isRepeat);
   }
 
-  const repeat = (): void =>  {
-    audioElement.loop = !audioElement.loop;
-    setIsRepeat(audioElement.loop);
+  const nextSong = (): void => {
+    QueueAPI.playNext(isRepeat);
   }
 
-  const shufle = (): void =>  {
-    setIsShufle(!isShufle)
+  const toggleRepeat = (): void => {
+    const newRepeat = !isRepeat;
+
+    setIsRepeat(newRepeat);
+    window.config.set({ repeat: newRepeat });
+  }
+
+  const toggleShuffle = (): void => {
+    const newShuffle = !isShuffle;
+    
+    setIsShuffle(newShuffle);
+    window.config.set({ shuffle: newShuffle });
   }
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const newTime = Number(e.target.value)
-    audioElement.currentTime = newTime
-    setCurrentTime(newTime)
+    const newTime = Number(e.target.value);
+    audioElement.currentTime = newTime;
+    setCurrentTime(newTime);
   }
 
   const formatTime = (t: number): string =>
@@ -76,27 +94,25 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
 
   const iconBase = "size-4 transition-colors duration-200 hover:brightness-125"
   const iconStatic = "fill-ui-gray-100 " + iconBase;
- 
+
   return (
     <div className="w-full h-full flex flex-col text-white">
-
       <section className="w-full flex items-center justify-center gap-8">
-
         {/* Shuffle */}
         <button
-          onClick={shufle}
+          onClick={toggleShuffle}
           title="Enable Shuffle"
           aria-label="Enable Shuffle"
-          className={`${iconBase} ${isShufle ? 'fill-ui-pink-100' : 'fill-ui-gray-100'}`}
+          className={`${iconBase} ${isShuffle ? 'fill-ui-pink-100' : 'fill-ui-gray-100'}`}
         >
-          <ShufleSVG className="size-4" />
+          <ShuffleSVG className="size-4" />
         </button>
 
         {/* Main controls */}
         <div className="flex items-center gap-4">
           {/* Prev */}
           <button
-            onClick={() => skip(-10)}
+            onClick={prevSong}
             title="Rewind 10s"
             aria-label="Rewind 10 seconds"
             className={iconStatic}
@@ -120,7 +136,7 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
 
           {/* Next */}
           <button
-            onClick={() => skip(10)}
+            onClick={nextSong}
             title="Forward 10s"
             aria-label="Forward 10 seconds"
             className={iconStatic}
@@ -131,16 +147,14 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
 
         {/* Repeat */}
         <button
-          onClick={repeat}
+          onClick={toggleRepeat}
           title="Enable Loop"
           aria-label="Enable Loop"
           className={`${iconBase} ${isRepeat ? 'fill-ui-pink-100' : 'fill-ui-gray-100'}`}
         >
           <RepeatSVG className="size-4" />
         </button>
-
       </section>
-
 
       {/* Player time line */}
       <section className="w-full h-full flex items-center justify-center gap-4">

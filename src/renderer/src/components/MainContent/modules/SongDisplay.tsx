@@ -32,8 +32,8 @@ export default function SongDisplay({ thumbnail, title, artist, album, album_thu
         )}
       </div>
 
-      <section className='overflow-hidden mt-10'>
-        <h4 id='pp-title' className='text-2xl truncate leading-tight text-white' {... { album, album_thumbnail } }>{title}</h4>
+      <section className='overflow-hidden mt-6'>
+        <h4 id='pp-title' className='text-2xl font-semibold truncate leading-tight text-white' {... { album, album_thumbnail } }>{title}</h4>
         <h2 id='pp-artist' className='text-xl font-medium truncate leading-tight text-ui-gray-100'>{artist}</h2>
       </section>
     </div>

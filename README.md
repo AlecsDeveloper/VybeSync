@@ -6,4 +6,6 @@
 ---
 
 ## Current app view:
-![Player Preview](/docs/preview.png)
+![Player Preview](/docs/global_search_1.png)
+![Player Preview](/docs/global_search_2.png)
+![Player Preview](/docs/album_search.png)

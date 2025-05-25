@@ -55,6 +55,19 @@ export type T_GLOBAL_SEARCH = {
   ArtistAlbums: T_ALBUM[];
 }
 
+export type T_ALBUM_SEARCH = {
+  AlbumID: string;
+  AlbumSongs: { 
+    data: T_SONG, 
+    extra: { liked: boolean }
+  }[];
+  AlbumThumbnails: T_THUMBNAIL[];
+  AlbumArtist: T_SONG_ARTIST;
+  AlbumYear: number;
+  AlbumName: string;
+  AlbumRaw: T_ALBUM;
+}
+
 export type T_PUSH_SONG = {
   Album: T_ALBUM;
   AudioSource: string;

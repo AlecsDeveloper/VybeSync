@@ -1,8 +1,9 @@
 import { $ } from "@renderer/lib/Utils";
 import ReactDOM from "react-dom/client";
 import { SongItemLazy, } from "@renderer/components/MainContent";
-import type { T_DB_ALBUM, T_GLOBAL_SEARCH } from "@renderer/types";
+import type { T_ALBUM_SEARCH, T_DB_ALBUM, T_GLOBAL_SEARCH } from "@renderer/types";
 import { GlobalSearch } from "@renderer/components/SearchResults";
+import AlbumSearch from "@renderer/components/SearchResults/panels/AlbumSearch";
 
 let root: ReactDOM.Root | null = null;
 
@@ -59,6 +60,25 @@ export default class SearchAPI {
     root.render(
       <>
         <GlobalSearch data={GlobalSeachData}/>
+      </>
+    )
+  }
+
+  static async getAlbumSearch(query: string): Promise<void> {
+    window.electron.ipcRenderer.invoke("search:getAlbumSearch", query);
+  }
+
+  static setAlbumSearch(AlbumSeachData: T_ALBUM_SEARCH): void {
+    const $result_section = $("#center-section");
+    if (!$result_section) return;
+   
+    if (root) root.unmount();
+    $result_section.innerHTML = "";
+    root = ReactDOM.createRoot($result_section);
+
+    root.render(
+      <>
+        <AlbumSearch data={AlbumSeachData}/>
       </>
     )
   }

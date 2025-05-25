@@ -2,16 +2,21 @@ import React from 'react'
 import type { T_ALBUM } from '@renderer/types'
 
 import PlaySVG from "@assets/icons/player/PlaySVG.svg?react"
+import SongThumbnail from './SongThumbnail'
+import SearchAPI from '@renderer/scripts/modules/SearchAPI'
 
 export default function AlbumCard({ data }: { data: T_ALBUM }): React.JSX.Element {
-  return (
-    <div className='w-1/5 pt-4 pb-4 rounded-[8px] bg-ui-dark-100 hover:bg-ui-dark-150 transition-colors duration-200 group'>
+  const handleAlbumSearch = (): Promise<void> => SearchAPI.getAlbumSearch(data.albumId);
 
+  return (
+    <div
+      onClick={handleAlbumSearch} 
+      className='w-1/5 pt-4 pb-4 rounded-[8px] bg-ui-dark-100 hover:bg-ui-dark-150 transition-colors duration-200 group'
+    >
       <section className='w-full flex items-center justify-center relative'>
-        <img 
-          src={data.thumbnails[3].url}
-          className='w-8/9 rounded-[4px]'
-        />
+        <div className='w-8/9 rounded-[4px]'>
+          <SongThumbnail thumbnail={data.thumbnails[3].url}/>
+        </div>
 
         <button
           className='

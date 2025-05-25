@@ -2,14 +2,18 @@ import React from 'react'
 
 import SongSVG from "@assets/icons/Song.svg?react"
 
+type Props =  { 
+  thumbnail: string | undefined, 
+  shape?: "square" | "circle"  
+} 
 
-export default function SongThumbnail({ thumbnail }: { thumbnail: string | undefined }): React.JSX.Element {
+export default function SongThumbnail({ thumbnail, shape }: Props = { thumbnail: undefined, shape: "square" }): React.JSX.Element {
   const [ hasError, setHasError ] = React.useState(false);
 
   return (
-    <div className='size-full relative bg-[#70707050] rounded-[4px]'>
+    <div className={`size-full relative bg-[#70707050] ${shape == "circle" ? "rounded-full " : "rounded-[4px]"}`}>
       <img
-        className='size-full rounded-[4px]'
+        className={`size-full ${shape == "circle" ? "rounded-full " : "rounded-[4px]"}`}
         src={hasError || !thumbnail ? "/src/assets/icons/blank.png" : thumbnail}
         alt="Song icon"
         onError={() => setHasError(true)}

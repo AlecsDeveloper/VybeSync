@@ -9,7 +9,7 @@ import SongThumbnail from '../modules/SongThumbnail';
 import PlaySVG from "@assets/icons/player/PlaySVG.svg?react"
 
 
-export default function GlobalSearch({ data }: { data: T_GLOBAL_SEARCH } ): React.JSX.Element {
+export default function GlobalSearch({ data }: { data: T_GLOBAL_SEARCH }): React.JSX.Element {
   const { FirstArtist, ArtistAlbums, FirstSongs, RelatedArtist } = data;
 
   if (!FirstArtist) return (<></>);
@@ -61,23 +61,27 @@ export default function GlobalSearch({ data }: { data: T_GLOBAL_SEARCH } ): Reac
       </header>
 
       {/* Related artist sections */}
-      <section className='text-white'>
-        <h1 className='h-2/12 pl-2 text-2xl font-bold'>Artists</h1>
+      { RelatedArtist.length == 0 ? (<></>) : (
+        <section className='text-white'>
+          <h1 className='h-2/12 pl-2 text-2xl font-bold'>Artists</h1>
 
-        <div className='w-full h-10/12 flex pt-2 pb-2'>
-          {RelatedArtist.map((artist) => (<ArtistCard key={artist.artistId} data={artist}/>))}
-        </div>
-      </section>
+          <div className='w-full h-10/12 flex pt-2 pb-2'>
+            {RelatedArtist.map((artist) => (<ArtistCard key={artist.artistId} data={artist}/>))}
+          </div>
+        </section>
+      )}
 
 
       {/* Related artist sections */}
-      <section className='text-white'>
-        <h1 className='h-2/12 pl-2 text-2xl font-bold'>Albums</h1>
+      { ArtistAlbums.length == 0 ? (<></>) : (
+        <section className='text-white'>
+          <h1 className='h-2/12 pl-2 text-2xl font-bold'>Albums</h1>
 
-        <div className='w-full h-10/12 flex pt-2 pb-2'>
-          {ArtistAlbums.slice(0,5).map((album) => (<AlbumCard key={album.albumId} data={album}/>))}
-        </div>
-      </section>
+          <div className='w-full h-10/12 flex pt-2 pb-2'>
+            {ArtistAlbums.slice(0,5).map((album) => (<AlbumCard key={album.albumId} data={album}/>))}
+          </div>
+        </section>
+      )}
 
     </div>
   )

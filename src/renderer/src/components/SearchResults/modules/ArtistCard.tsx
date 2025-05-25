@@ -2,16 +2,17 @@ import React from 'react'
 import type { T_ARTIST } from '@renderer/types'
 
 import PlaySVG from "@assets/icons/player/PlaySVG.svg?react"
+import SongThumbnail from './SongThumbnail'
 
 export default function ArtistCard({ data }: { data: T_ARTIST }): React.JSX.Element {
   return (
     <div className='w-1/5 pt-4 pb-4 rounded-[8px] bg-ui-dark-100 hover:bg-ui-dark-150 transition-colors duration-200 group'>
 
       <section className='w-full flex items-center justify-center relative'>
-        <img 
-          src={data.thumbnails[1].url}
-          className='w-8/9 rounded-full'
-        />
+
+        <div className='w-8/9'>
+          <SongThumbnail thumbnail={data.thumbnails[1].url} shape='circle'/>
+        </div>
 
         <button
           className='

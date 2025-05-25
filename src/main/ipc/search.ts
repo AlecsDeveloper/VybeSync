@@ -69,6 +69,45 @@ export default class SearchAPI {
       payload: QueryResponse,
     });
   }
+
+  static async getAlbumSearch(albumId: string): Promise<void> {
+    const Album = (await this.API.getAlbum(albumId));
+    const AlbumSongs = Album.songs;
+    const AlbumThumbnails = await Downloader.getAlbumThumbnailsFromId(albumId);
+
+    let SongIndex = 0
+    const ParsedSongs: { data: T_SONG, extra: unknown }[] = []
+
+    for (const song of AlbumSongs) {
+      AlbumSongs[SongIndex] = await Downloader.getSongThumbnails(song);
+
+      const DB_DATA = DataBase.getSong(song.videoId);
+
+      const extra = {
+        liked: Boolean(DB_DATA?.liked || 0)
+      }
+
+      ParsedSongs[SongIndex] = { data: AlbumSongs[SongIndex], extra }
+      SongIndex++;
+    }
+
+    
+    const QueryResponse = { 
+      AlbumID: albumId,
+      AlbumSongs: ParsedSongs,
+      AlbumThumbnails,
+      AlbumArtist: Album.artist,
+      AlbumYear: Album.year,
+      AlbumName: Album.name,
+      AlbumRaw: Album
+    }
+
+    mainWindow.webContents.send("vybesync:event", {
+      type: "setAlbumSearch",
+      payload: QueryResponse,
+    });
+  }
 }
 
 ipcMain.handle("search:getGlobalSearch", (_, data) => SearchAPI.getGlobalSearch(data));
+ipcMain.handle("search:getAlbumSearch", (_, data) => SearchAPI.getAlbumSearch(data));

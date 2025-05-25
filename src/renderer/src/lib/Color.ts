@@ -38,7 +38,6 @@ export default class Color {
   }
 
   static saturate({ R, G, B }: { R: number; G: number; B: number }, factor = 1.2): { R: number; G: number; B: number } {
-    // Normalize RGB a 0-1
     const r = R / 255, g = G / 255, b = B / 255;
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
     const l = (max + min) / 2;
@@ -57,10 +56,8 @@ export default class Color {
       h /= 6;
     }
 
-    // Aumentar saturación
     s = Math.min(1, s * factor);
 
-    // Convertir HSL a RGB
     const hueToRgb = (p: number, q: number, t: number): number => {
       if (t < 0) t += 1;
       if (t > 1) t -= 1;
@@ -85,6 +82,12 @@ export default class Color {
       B: Math.round(b2 * 255)
     };
   }
+
+  static getContrastColor({ R, G, B }: { R: number; G: number; B: number }): 1 | 0 {
+    const avg = (R + G + B) / 3;
+    return avg < 64 ? 1 : 0;
+  }
+
 
 
   static rgbToHex({ R, G, B }: { R: number; G: number; B: number }): string {

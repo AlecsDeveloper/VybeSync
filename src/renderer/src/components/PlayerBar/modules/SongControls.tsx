@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 import PlaySVG from "@assets/icons/player/PlaySVG.svg?react";
 import PauseSVG from "@assets/icons/player/PauseSVG.svg?react";
@@ -6,6 +6,7 @@ import PrevSVG from "@assets/icons/player/PrevSVG.svg?react";
 import NextSVG from "@assets/icons/player/NextSVG.svg?react";
 import RepeatSVG from "@assets/icons/player/RepeatSVG.svg?react";
 import ShuffleSVG from "@assets/icons/player/ShuffleSVG.svg?react";
+import QueueAPI from '@renderer/scripts/modules/QueueAPI';
 
 type Props = {
   audioElement: HTMLAudioElement;
@@ -22,6 +23,13 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
+  const repeatRef = useRef(isRepeat);
+
+  // sync ref con el estado
+  useEffect(() => {
+    repeatRef.current = isRepeat;
+  }, [isRepeat]);
+
   useEffect(() => {
     const updateTime = (): void => setCurrentTime(audioElement.currentTime);
     const updateDuration = (): void => setDuration(audioElement.duration);
@@ -30,10 +38,8 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
     const handlePause = (): void => setIsPlaying(false);
 
     const handleEnd = (): void => {
-      console.log("next_song");
+      QueueAPI.playNext(repeatRef.current);
     };
-
-    audioElement.loop = configRepeat;
 
     audioElement.addEventListener('timeupdate', updateTime);
     audioElement.addEventListener('loadedmetadata', updateDuration);
@@ -48,24 +54,25 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
       audioElement.removeEventListener('pause', handlePause);
       audioElement.removeEventListener('ended', handleEnd);
     };
-  }, [audioElement, configRepeat]);
-
-
+  }, [audioElement]);
 
   const togglePlay = (): void => {
     if (!isPlaying) audioElement.play();
     else audioElement.pause();
   }
 
-  const skip = (seconds: number): void => {
-    audioElement.currentTime = Math.min(Math.max(audioElement.currentTime + seconds, 0), duration);
+  const prevSong = (): void => {
+    QueueAPI.playPrev(isRepeat);
+  }
+
+  const nextSong = (): void => {
+    QueueAPI.playNext(isRepeat);
   }
 
   const toggleRepeat = (): void => {
     const newRepeat = !isRepeat;
 
     setIsRepeat(newRepeat);
-    audioElement.loop = newRepeat;
     window.config.set({ repeat: newRepeat });
   }
 
@@ -105,7 +112,7 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
         <div className="flex items-center gap-4">
           {/* Prev */}
           <button
-            onClick={() => skip(-10)}
+            onClick={prevSong}
             title="Rewind 10s"
             aria-label="Rewind 10 seconds"
             className={iconStatic}
@@ -129,7 +136,7 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
 
           {/* Next */}
           <button
-            onClick={() => skip(10)}
+            onClick={nextSong}
             title="Forward 10s"
             aria-label="Forward 10 seconds"
             className={iconStatic}

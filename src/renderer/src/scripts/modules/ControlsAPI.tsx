@@ -56,7 +56,6 @@ export default class ControlsAPI {
     const $player_section = $("#player-config");
     if (!$player_section) return;
     if (!this.SongConfigDOM) this.SongConfigDOM = ReactDOM.createRoot($player_section);
-
   }
 
   static generateControls(url: string): void {

@@ -55,6 +55,14 @@ export type T_GLOBAL_SEARCH = {
   ArtistAlbums: T_ALBUM[];
 }
 
+export type T_PUSH_SONG = {
+  Album: T_ALBUM;
+  AudioSource: string;
+  Thumbnails: T_THUMBNAIL[];
+  VideoID: string;
+  Name: string;
+}
+
 
 // Data Base Types
 export type T_DB_ALBUM = {

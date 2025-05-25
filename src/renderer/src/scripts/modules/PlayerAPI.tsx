@@ -3,8 +3,9 @@ import Color from "@lib/Color";
 import { $ } from "@lib/Utils";
 import ReactDOM from "react-dom/client";
 import ControlsAPI from "./ControlsAPI";
+import { T_ALBUM, T_PUSH_SONG } from "@renderer/types";
 
-export type thumbnail = { url: string; width: number; height: number; }
+export type thumbnail = { url: string; width: number; height: number; };
 export type Format = {
   url: string;
   videoId: string;
@@ -13,33 +14,35 @@ export type Format = {
 };
 
 let colorData: { R: number; G: number; B: number } | null = null;
-let currentSongData: { element: HTMLElement; thumbnails: thumbnail[] } | null = null;
+let currentSongData: { element: HTMLElement; thumbnails: thumbnail[]; album: T_ALBUM; name: string } | null = null;
 
 let rightSectionRoot: ReactDOM.Root | null = null;
 let leftSectionRoot: ReactDOM.Root | null = null;
 
-const cache = new Map();
+const cache = new Map<string, string>();
 
 export default class PlayerAPI {
-  static async pushSong({ url, videoId, thumbnails }: Format): Promise<void> {
-    const $song_element = document.getElementById(videoId);
-    const imgElement = $song_element?.getElementsByTagName("img").item(0) as HTMLImageElement | null;
+  static async pushSong({ VideoID, AudioSource, Thumbnails, Album, Name }: T_PUSH_SONG): Promise<void> {
+    const $song_element = document.getElementById(VideoID);
+    const imgElement = $song_element?.querySelector("img") as HTMLImageElement | null;
 
     if (!$song_element || !imgElement) return;
 
     try {
-      const image = await this.loadImage(imgElement.src, videoId);
+      const image = await this.loadImage(imgElement.src, VideoID);
       colorData = Color.getAverageColor(image, 4);
     } catch (err) {
       console.warn("Failed to load image for color parsing:", err);
       colorData = null;
     }
 
-    ControlsAPI.generateControls(url);
+    ControlsAPI.generateControls(AudioSource);
 
     currentSongData = {
+      name: Name,
+      album: Album,
       element: $song_element,
-      thumbnails
+      thumbnails: Thumbnails
     };
 
     this.updateView();
@@ -47,28 +50,26 @@ export default class PlayerAPI {
   }
 
   static async loadImage(url: string, videoId: string): Promise<HTMLImageElement> {
+    const load = (src: string): Promise<HTMLImageElement> =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+      });
+
     if (cache.has(videoId)) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = cache.get(videoId);
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-      });
-    } else {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const objectURL = URL.createObjectURL(blob);
-
-      cache.set(videoId, objectURL);
-
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = objectURL;
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-      });
+      return load(cache.get(videoId)!);
     }
+
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const objectURL = URL.createObjectURL(blob);
+    cache.set(videoId, objectURL);
+
+    return load(objectURL);
   }
+
 
   static isInFullScreenMode(): boolean {
     return window.innerWidth >= 1024;
@@ -77,12 +78,11 @@ export default class PlayerAPI {
   static updateView(): void {
     if (!currentSongData) return;
 
-    const { element: songElement, thumbnails } = currentSongData;
+    const { thumbnails, name, album } = currentSongData;
     const isFullScreen = this.isInFullScreenMode();
 
     const $leftSection = $("#left-section");
     const $rightSection = $("#right-section");
-
     const $leftPlayerArea = $("#left-player-area");
     const $playlistArea = $("#playlist-area");
 
@@ -103,51 +103,35 @@ export default class PlayerAPI {
 
     if (colorData) {
       const { R, G, B } = colorData;
-      $targetSection.setAttribute(
-        "style",
-        `background-image: linear-gradient(to bottom, rgb(${R}, ${G}, ${B}), #101010)`
-      );
-
-      if (isFullScreen) {
-        $leftSection.removeAttribute("style");
-      } else {
-        $rightSection.removeAttribute("style");
-      }
+      $targetSection.setAttribute("style", `background-image: linear-gradient(to bottom, rgb(${R}, ${G}, ${B}), #101010)`);
+      (isFullScreen ? $leftSection : $rightSection).removeAttribute("style");
     }
 
     const thumbnail = thumbnails[1]?.url;
     const album_thumbnail = thumbnails[2]?.url;
-    const title = songElement.querySelector("section:nth-of-type(2) h4")?.textContent?.trim() || "";
-    const artist = songElement.querySelector("section:nth-of-type(2) h2")?.textContent?.trim() || "";
-    const album = songElement.querySelector("section:nth-of-type(3) h2")?.textContent?.trim() || "";
+    const title = name;
+    const artist = album.artist.name;
 
-    const songEvent = new CustomEvent('song-changed', {
+    window.dispatchEvent(new CustomEvent("song-changed", {
       detail: { thumbnail, title, artist }
-    });
-    window.dispatchEvent(songEvent);
+    }));
 
     if (!isFullScreen) {
-      if ($leftPlayerArea) $leftPlayerArea.classList.remove("hidden");
-      if ($playlistArea) $playlistArea.classList.add("hidden");
+      $leftPlayerArea?.classList.remove("hidden");
+      $playlistArea?.classList.add("hidden");
 
-      if (leftSectionRoot) {
-        leftSectionRoot.render(
-          <SongDisplay thumbnail={thumbnail} title={title} artist={artist} album={album} album_thumbnail={album_thumbnail}/>
-        );
-      }
+      leftSectionRoot?.render(
+        <SongDisplay thumbnail={thumbnail} title={title} artist={artist} album={album.name} album_thumbnail={album_thumbnail} />
+      );
 
-      if (rightSectionRoot) {
-        rightSectionRoot.render(null);
-      }
+      rightSectionRoot?.render(null);
     } else {
-      if ($leftPlayerArea) $leftPlayerArea.classList.add("hidden");
-      if ($playlistArea) $playlistArea.classList.remove("hidden");
+      $leftPlayerArea?.classList.add("hidden");
+      $playlistArea?.classList.remove("hidden");
 
-      if (rightSectionRoot) {
-        rightSectionRoot.render(
-          <SongDisplay thumbnail={thumbnail} title={title} artist={artist} album={album} album_thumbnail={album_thumbnail}/>
-        );
-      }
+      rightSectionRoot?.render(
+        <SongDisplay thumbnail={thumbnail} title={title} artist={artist} album={album.name} album_thumbnail={album_thumbnail} />
+      );
     }
 
     ControlsAPI.generateSongPreview(thumbnail, title, artist);
@@ -161,17 +145,14 @@ export default class PlayerAPI {
     let resizeTimer: number | null = null;
 
     const handleResize = (): void => {
-      if (resizeTimer !== null) {
-        clearTimeout(resizeTimer);
-      }
-
+      if (resizeTimer !== null) clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(() => {
         this.updateView();
         resizeTimer = null;
       }, 150);
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     this.resizeListenerSetup = true;
   }
 }

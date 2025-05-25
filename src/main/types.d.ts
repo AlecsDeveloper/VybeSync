@@ -21,6 +21,9 @@ export type T_ALBUM = {
   year: number | null;
 }
 
+export type T_FORMAT = {
+  url: string;
+}
 
 // Song Types
 export type T_SONG_ARTIST = {

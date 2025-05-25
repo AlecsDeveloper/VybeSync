@@ -12,6 +12,8 @@ import PlaySVG from "@assets/icons/player/PlaySVG.svg?react"
 export default function GlobalSearch({ data }: { data: T_GLOBAL_SEARCH } ): React.JSX.Element {
   const { FirstArtist, ArtistAlbums, FirstSongs, RelatedArtist } = data;
 
+  if (!FirstArtist) return (<></>);
+
   return (
     <div className='size-full overflow-y-auto block space-y-16'>
 
@@ -24,7 +26,7 @@ export default function GlobalSearch({ data }: { data: T_GLOBAL_SEARCH } ): Reac
           <div className='w-full h-10/12 flex items-center justify-center relative transition-colors duration-200 group'>
             <section className='size-[calc(100%-16px)] rounded-xl bg-ui-dark-150 hover:brightness-110 hover:[&>*]:brightness-90 p-6 flex items-center'>
               <div className='lg:size-24 size-18 rounded-[6px]'>
-                <SongThumbnail thumbnail={FirstArtist.thumbnails[1].url} />
+                <SongThumbnail thumbnail={FirstArtist.thumbnails[1]?.url} />
               </div>
 
               <div className='truncate leading-tight ml-4 w-1/2'>

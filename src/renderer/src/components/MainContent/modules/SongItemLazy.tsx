@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function SongItemLazy({ song, album, index, liked }: Props): React.JSX.Element {
-  const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("music_bulk:getSourceAudio", { videoId: song.videoId, albumId: album.albumId });
+  const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("song:pushSong", [ song.videoId, album.albumId ]);
  
   const thumbnail = album.albumThumbnails[0]?.url;
 

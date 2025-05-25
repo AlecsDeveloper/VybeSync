@@ -10,7 +10,7 @@ type ExtraData = {
 }
 
 export default function SongSmall({ data, extra }: { data: T_SONG, extra: ExtraData }): React.JSX.Element {
-  const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("music_bulk:getSourceAudio", { videoId: data.videoId, albumId: data.album?.albumId });
+  const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("song:pushSong", [ data.videoId, data.album?.albumId || "" ]);
   const [ isLiked, setIsLiked ] = React.useState(extra.liked);
 
   const handleLike = (like: boolean): void => {

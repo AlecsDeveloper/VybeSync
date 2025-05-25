@@ -5,18 +5,22 @@ import PauseSVG from "@assets/icons/player/PauseSVG.svg?react";
 import PrevSVG from "@assets/icons/player/PrevSVG.svg?react";
 import NextSVG from "@assets/icons/player/NextSVG.svg?react";
 import RepeatSVG from "@assets/icons/player/RepeatSVG.svg?react";
-import ShufleSVG from "@assets/icons/player/ShufleSVG.svg?react";
+import ShuffleSVG from "@assets/icons/player/ShuffleSVG.svg?react";
 
 type Props = {
   audioElement: HTMLAudioElement;
 }
 
 export default function SongControls({ audioElement }: Props): React.JSX.Element {
-  const [ isPlaying, setIsPlaying ] = useState(false);
-  const [ isRepeat, setIsRepeat ] = useState(false);
-  const [ isShufle, setIsShufle ] = useState(false);
-  const [ currentTime, setCurrentTime ] = useState(0);
-  const [ duration, setDuration ] = useState(0);
+  const config = window.config.get() as { repeat?: boolean; shuffle?: boolean };
+  const configShuffle = config.shuffle ?? false;
+  const configRepeat = config.repeat ?? false;
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isRepeat, setIsRepeat] = useState(configRepeat);
+  const [isShuffle, setIsShuffle] = useState(configShuffle);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     const updateTime = (): void => setCurrentTime(audioElement.currentTime);
@@ -25,15 +29,17 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
     const handlePlay = (): void => setIsPlaying(true);
     const handlePause = (): void => setIsPlaying(false);
 
-    const handleEnd = (): Promise<void> => window.electron.ipcRenderer.invoke("rpc:updateSongData", undefined);
+    const handleEnd = (): void => {
+      console.log("next_song");
+    };
+
+    audioElement.loop = configRepeat;
 
     audioElement.addEventListener('timeupdate', updateTime);
     audioElement.addEventListener('loadedmetadata', updateDuration);
     audioElement.addEventListener('play', handlePlay);
     audioElement.addEventListener('pause', handlePause);
     audioElement.addEventListener('ended', handleEnd);
-
-    setIsPlaying(true);
 
     return () => {
       audioElement.removeEventListener('timeupdate', updateTime);
@@ -42,33 +48,38 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
       audioElement.removeEventListener('pause', handlePause);
       audioElement.removeEventListener('ended', handleEnd);
     };
-  }, [audioElement]);
+  }, [audioElement, configRepeat]);
+
+
 
   const togglePlay = (): void => {
-    if (audioElement.paused) {
-      audioElement.play();
-    } else {
-      audioElement.pause();
-    }
+    if (!isPlaying) audioElement.play();
+    else audioElement.pause();
   }
 
   const skip = (seconds: number): void => {
-    audioElement.currentTime = Math.min(Math.max(audioElement.currentTime + seconds, 0), duration)
+    audioElement.currentTime = Math.min(Math.max(audioElement.currentTime + seconds, 0), duration);
   }
 
-  const repeat = (): void =>  {
-    audioElement.loop = !audioElement.loop;
-    setIsRepeat(audioElement.loop);
+  const toggleRepeat = (): void => {
+    const newRepeat = !isRepeat;
+
+    setIsRepeat(newRepeat);
+    audioElement.loop = newRepeat;
+    window.config.set({ repeat: newRepeat });
   }
 
-  const shufle = (): void =>  {
-    setIsShufle(!isShufle)
+  const toggleShuffle = (): void => {
+    const newShuffle = !isShuffle;
+    
+    setIsShuffle(newShuffle);
+    window.config.set({ shuffle: newShuffle });
   }
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const newTime = Number(e.target.value)
-    audioElement.currentTime = newTime
-    setCurrentTime(newTime)
+    const newTime = Number(e.target.value);
+    audioElement.currentTime = newTime;
+    setCurrentTime(newTime);
   }
 
   const formatTime = (t: number): string =>
@@ -76,20 +87,18 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
 
   const iconBase = "size-4 transition-colors duration-200 hover:brightness-125"
   const iconStatic = "fill-ui-gray-100 " + iconBase;
- 
+
   return (
     <div className="w-full h-full flex flex-col text-white">
-
       <section className="w-full flex items-center justify-center gap-8">
-
         {/* Shuffle */}
         <button
-          onClick={shufle}
+          onClick={toggleShuffle}
           title="Enable Shuffle"
           aria-label="Enable Shuffle"
-          className={`${iconBase} ${isShufle ? 'fill-ui-pink-100' : 'fill-ui-gray-100'}`}
+          className={`${iconBase} ${isShuffle ? 'fill-ui-pink-100' : 'fill-ui-gray-100'}`}
         >
-          <ShufleSVG className="size-4" />
+          <ShuffleSVG className="size-4" />
         </button>
 
         {/* Main controls */}
@@ -131,16 +140,14 @@ export default function SongControls({ audioElement }: Props): React.JSX.Element
 
         {/* Repeat */}
         <button
-          onClick={repeat}
+          onClick={toggleRepeat}
           title="Enable Loop"
           aria-label="Enable Loop"
           className={`${iconBase} ${isRepeat ? 'fill-ui-pink-100' : 'fill-ui-gray-100'}`}
         >
           <RepeatSVG className="size-4" />
         </button>
-
       </section>
-
 
       {/* Player time line */}
       <section className="w-full h-full flex items-center justify-center gap-4">

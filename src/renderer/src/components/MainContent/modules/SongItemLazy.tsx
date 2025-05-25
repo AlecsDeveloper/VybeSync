@@ -1,12 +1,12 @@
 import React from 'react'
-import type { T_ALBUM, T_SONG } from "@scripts/modules/SearchAPI";
 import { durationFormat } from '@renderer/lib/Utils';
 import SongSVG from "@assets/icons/Song.svg?react"
 import HeartSVG from "@assets/icons/songs/HeartSVG.svg?react"
+import { T_DB_ALBUM, T_DB_SONG } from '@renderer/types';
 
 type Props = {
-  song: T_SONG;
-  album: T_ALBUM;
+  song: T_DB_SONG;
+  album: T_DB_ALBUM;
   index: number;
   liked: boolean;
 };
@@ -18,15 +18,14 @@ export default function SongItemLazy({ song, album, index, liked }: Props): Reac
 
   const [ hasError, setHasError ] = React.useState(false);
   const [ isLiked, setIsLiked ] = React.useState(liked);
-
+  
   const handleLike = (like: boolean): void => {
-    if (!like) window.electron.ipcRenderer.invoke("song:deleteSong", song.videoId);
-
-    else window.electron.ipcRenderer.invoke("song:saveSong", { 
+    window.electron.ipcRenderer.invoke("song:updateSong", { 
       video_id: song.videoId,
       song_name: song.name,
       album_id: album.albumId,
-      duration: song.duration
+      duration: song.duration,
+      liked: Number(like)
     });
   }
 

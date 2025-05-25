@@ -8,7 +8,7 @@ export default function SearchBar(): React.JSX.Element {
   const handleSubmit = (): void=> {
     if (!query.trim()) return;
 
-    SearchAPI.getBulkResults(query);
+    SearchAPI.getGlobalSearch(query);
   }
 
   const handleFormSubmit = (e: React.FormEvent): void => {

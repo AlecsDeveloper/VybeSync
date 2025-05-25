@@ -37,4 +37,12 @@ audio { display: none; }
 
 body { user-select: none; }
 
+button:focus,
+a:focus,
+input:focus {
+  outline: none;
+  filter: brightness(110%); 
+}
+
+
 /* * { outline: 1px solid red; } */

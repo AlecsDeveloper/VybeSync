@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import AddSVG from '@assets/icons/addSVG.svg?react'
 import CreatePlaylistModal from '@components/MainContent/modules/CreatePlaylistModal'
-import { Song } from '@renderer/scripts/modules/SearchAPI'
+import { Song } from '@components/MainContent/modules/CreatePlaylistModal'
 
 type Playlist = {
   id: string;

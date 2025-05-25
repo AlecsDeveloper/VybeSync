@@ -2,6 +2,7 @@ import { Innertube, UniversalCache } from "youtubei.js";
 import YTMusic from "ytmusic-api";
 import { ipcMain } from "electron";
 import { mainWindow } from "../window/mainWindow";
+import { T_ALBUM } from "../types";
 
 export class MusicIPC {
   private static API: YTMusic = new YTMusic();
@@ -51,6 +52,13 @@ export class MusicIPC {
         payload: { ...res, thumbnails: thumbnails, videoId },
       });
     }
+
+    return res;
+  }
+
+  static async getAlbumFromId(albumId: string): Promise<T_ALBUM> {
+    await this.LoadAPI();
+    const res = await this.API.getAlbum(albumId);
 
     return res;
   }

@@ -2,20 +2,40 @@ import { ipcMain } from "electron";
 import * as DataBase from "../lib/database";
 
 export default class SongIPC {
+  static updateSong(data: Partial<DataBase.SONGS_TABLE> & { video_id: string }): void {
+    if (!data?.video_id) return;
 
-  static saveSong(data: DataBase.SONGS_TABLE): void {
-    if (!data) return;
+    const current = DataBase.getSong(data.video_id);
 
-    DataBase.insertSong(data.video_id, data.song_name, data.album_id, data.duration);
-  }
+    if (!current && (!data.song_name || !data.album_id)) return;
 
-  static deleteSong(videoId: string): void {
-    if (!videoId) return;
+    const liked = data.liked ?? current?.liked ?? 0;
+    const saved = data.saved ?? current?.saved ?? 0;
 
-    DataBase.deleteSong(videoId);
+
+    if (liked === 0 && saved === 0) {
+      DataBase.deleteSong(data.video_id);
+      return;
+    }
+
+    const updated = {
+      video_id: data.video_id,
+      song_name: data.song_name ?? current?.song_name ?? "",
+      album_id: data.album_id ?? current?.album_id ?? "",
+      duration: data.duration ?? current?.duration ?? 0,
+      liked,
+      saved
+    };
+
+    DataBase.insertSong(
+      updated.video_id,
+      updated.song_name,
+      updated.album_id,
+      updated.duration,
+      updated.liked,
+      updated.saved
+    );
   }
 }
 
-
-ipcMain.handle("song:saveSong", (_, data) => SongIPC.saveSong(data));
-ipcMain.handle("song:deleteSong", (_, data) => SongIPC.deleteSong(data));
+ipcMain.handle("song:updateSong", (_, data) => SongIPC.updateSong(data));

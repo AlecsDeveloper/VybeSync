@@ -17,10 +17,10 @@ app.whenReady().then(() => {
   })
 
   RichPresenceAPI.StartRPC();
-})
+});
 
 app.on('window-all-closed', () => {
   if (process.platform === 'darwin') return;
   RichPresenceAPI.RemoveRPC();
   app.quit()
-})
+});

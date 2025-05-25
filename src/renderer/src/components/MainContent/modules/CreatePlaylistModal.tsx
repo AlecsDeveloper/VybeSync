@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import SearchSVG from '@assets/icons/SearchSVG.svg?react'
 import AddSVG from '@assets/icons/addSVG.svg?react'
-import { Song } from '@scripts/modules/SearchAPI'
 import PlaylistSearchAPI from '@scripts/modules/PlaylistSearchAPI'
 
 interface CreatePlaylistModalProps {
@@ -9,6 +8,17 @@ interface CreatePlaylistModalProps {
   onClose: () => void
   onSave: (name: string, songs: Song[]) => void
 }
+
+export type Song = {
+  type: "SONG";
+  name: string;
+  videoId: string;
+  artist: { artistId: string | null; name: string; };
+  album: { name: string; albumId: string; } | null;
+  duration: number | null;
+  thumbnails: { url: string; width: number; height: number; }[];
+};
+
 
 export default function CreatePlaylistModal({ isOpen, onClose, onSave }: CreatePlaylistModalProps): React.JSX.Element {
   const [playlistName, setPlaylistName] = useState('')

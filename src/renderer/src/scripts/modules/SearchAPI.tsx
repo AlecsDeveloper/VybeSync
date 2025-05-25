@@ -1,16 +1,8 @@
 import { $ } from "@renderer/lib/Utils";
 import ReactDOM from "react-dom/client";
 import { SongItemLazy, } from "@renderer/components/MainContent";
-
-export type Song = {
-  type: "SONG";
-  name: string;
-  videoId: string;
-  artist: { artistId: string | null; name: string; };
-  album: { name: string; albumId: string; } | null;
-  duration: number | null;
-  thumbnails: { url: string; width: number; height: number; }[];
-};
+import type { T_DB_ALBUM, T_GLOBAL_SEARCH } from "@renderer/types";
+import { GlobalSearch } from "@renderer/components/SearchResults";
 
 let root: ReactDOM.Root | null = null;
 
@@ -23,10 +15,13 @@ export default class SearchAPI {
     window.electron.ipcRenderer.invoke("music_bulk:getResults", { query });
   }
 
-  static setResultsLazy(albums: T_ALBUM[]): void {
+  static setResultsLazy(albums: T_DB_ALBUM[]): void {
     const $result_section = $("#center-section");
     if (!$result_section) return;
-    if (!root) root = ReactDOM.createRoot($result_section);
+   
+    if (root) root.unmount();
+    $result_section.innerHTML = "";
+    root = ReactDOM.createRoot($result_section);
 
     let index = -1;
     root.render(
@@ -48,35 +43,24 @@ export default class SearchAPI {
       </>
     );
   }
+
+  static async getGlobalSearch(query: string): Promise<void> {
+    window.electron.ipcRenderer.invoke("search:getGlobalSearch", query);
+  }
+
+  static setGlobalSearch(GlobalSeachData: T_GLOBAL_SEARCH): void {
+    const $result_section = $("#center-section");
+    if (!$result_section) return;
+   
+    if (root) root.unmount();
+    $result_section.innerHTML = "";
+    root = ReactDOM.createRoot($result_section);
+
+    root.render(
+      <>
+        <GlobalSearch data={GlobalSeachData}/>
+      </>
+    )
+  }
 }
 
-
-
-export type T_ALBUM = {
-  albumId: string;
-
-  albumThumbnails: { 
-    url: string; 
-    width: number; 
-    height: number;
-  }[];
-
-  albumBasicinfo: { 
-    name: string;
-    year: number | null;
-    artist: { 
-      artistId: string | null;
-      name: string;
-    }
-  };
-
-  albumSongs: T_SONG[];
-}
-
-export type T_SONG = {
-  videoId: string;
-  name: string;
-  duration: number | null;
-  albumId: string | null;
-  liked: boolean
-}

@@ -14,7 +14,7 @@ export type Format = {
 };
 
 let colorData: { R: number; G: number; B: number } | null = null;
-let currentSongData: { element: HTMLElement; thumbnails: thumbnail[]; album: T_ALBUM; name: string } | null = null;
+let currentSongData: { thumbnails: thumbnail[]; album: T_ALBUM; name: string } | null = null;
 
 let rightSectionRoot: ReactDOM.Root | null = null;
 let leftSectionRoot: ReactDOM.Root | null = null;
@@ -23,13 +23,11 @@ const cache = new Map<string, string>();
 
 export default class PlayerAPI {
   static async pushSong({ VideoID, AudioSource, Thumbnails, Album, Name }: T_PUSH_SONG): Promise<void> {
-    const $song_element = document.getElementById(VideoID);
-    const imgElement = $song_element?.querySelector("img") as HTMLImageElement | null;
-
-    if (!$song_element || !imgElement) return;
-
     try {
-      const image = await this.loadImage(imgElement.src, VideoID);
+      const img = new Image();
+      img.src = Thumbnails[0].url;
+
+      const image = await this.loadImage(img.src, VideoID);
       colorData = Color.getAverageColor(image, 4);
     } catch (err) {
       console.warn("Failed to load image for color parsing:", err);
@@ -41,7 +39,6 @@ export default class PlayerAPI {
     currentSongData = {
       name: Name,
       album: Album,
-      element: $song_element,
       thumbnails: Thumbnails
     };
 

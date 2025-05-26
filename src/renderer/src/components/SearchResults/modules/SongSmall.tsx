@@ -3,6 +3,7 @@ import React from 'react'
 
 import HeartSVG from "@assets/icons/songs/HeartSVG.svg?react"
 import SongThumbnail from './SongThumbnail';
+import QueueAPI from '@renderer/scripts/modules/QueueAPI';
 
 
 type ExtraData = {
@@ -10,7 +11,6 @@ type ExtraData = {
 }
 
 export default function SongSmall({ data, extra }: { data: T_SONG, extra: ExtraData }): React.JSX.Element {
-  const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("song:pushSong", [ data.videoId, data.album?.albumId || "" ]);
   const [ isLiked, setIsLiked ] = React.useState(extra.liked);
 
   const handleLike = (like: boolean): void => {
@@ -24,6 +24,12 @@ export default function SongSmall({ data, extra }: { data: T_SONG, extra: ExtraD
   }
 
   const thumbnail = data.thumbnails[0]?.url;
+
+  const handleClickButton = (): void => {
+    QueueAPI.clearQueue();
+    QueueAPI.addToQueue({ videoId: data.videoId, albumId: data.album?.albumId || ""});
+    QueueAPI.initQueue();
+  };
 
   return (
     <div

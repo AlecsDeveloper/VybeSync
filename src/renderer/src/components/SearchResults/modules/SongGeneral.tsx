@@ -17,7 +17,7 @@ type Props = {
 
 export default function SongGeneral({ song, album, index, albumThumbnails }: Props): React.JSX.Element {
   const handleClickButton = (): Promise<void> => window.electron.ipcRenderer.invoke("song:pushSong", [ song.data.videoId, album.albumId ]);
-  
+
   const thumbnail = albumThumbnails ? albumThumbnails[0].url : song.data.thumbnails[0].url;
 
   const [ isLiked, setIsLiked ] = React.useState(song.extra.liked);

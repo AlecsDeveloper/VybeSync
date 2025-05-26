@@ -43,8 +43,6 @@ export default function AlbumSearch({ data }: { data: T_ALBUM_SEARCH }): React.J
 
     QueueAPI.addBulkToQueue(AlbumQueue);
     QueueAPI.initQueue();
-
-    console.log(AlbumQueue);
   };
 
 
@@ -63,9 +61,9 @@ export default function AlbumSearch({ data }: { data: T_ALBUM_SEARCH }): React.J
             <SongThumbnail thumbnail={AlbumThumbnails[1]?.url}/>
           </div>
 
-          <div className='text-white w-2/3 truncate leading-tight'>
+          <div className='text-white w-2/3'>
             <h4 className='text-ui-gray-100 ml-2'>Album</h4>
-            <h1 className='font-bold text-7xl'>{AlbumName}</h1>
+            <h1 className='font-bold text-7xl truncate leading-tight'>{AlbumName}</h1>
 
             <section className='flex items-center pt-2 ml-2 h-10'>
               <h4 className='font-bold'>{AlbumArtist.name}</h4>

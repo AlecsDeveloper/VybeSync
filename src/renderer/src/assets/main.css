@@ -23,13 +23,13 @@
 dialog[open] {
   z-index: 100;
   scale: 1;
-  transition: scale .3s ease-in-out;
+  transition: scale .2s ease-in-out;
 
   @starting-style { scale: 0; }
 }
 
 dialog {
-  transition: scale .3s ease, display .3s ease allow-discrete;
+  transition: scale .2s ease, display .2s ease allow-discrete;
   scale: 0
 }
 

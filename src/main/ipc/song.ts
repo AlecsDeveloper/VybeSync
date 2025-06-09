@@ -20,12 +20,6 @@ export default class SongIPC {
     const liked = data.liked ?? current?.liked ?? 0;
     const saved = data.saved ?? current?.saved ?? 0;
 
-
-    if (liked === 0 && saved === 0) {
-      DataBase.deleteSong(data.video_id);
-      return;
-    }
-
     const updated = {
       video_id: data.video_id,
       song_name: data.song_name ?? current?.song_name ?? "",

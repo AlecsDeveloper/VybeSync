@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import type { T_ALBUM_SEARCH } from '@renderer/types'
 import SongThumbnail from '../modules/SongThumbnail'
-import { timeFormat } from '@renderer/lib/Utils'
+import { $, timeFormat } from '@renderer/lib/Utils'
 import SongGeneral from '../modules/SongGeneral'
 import Color from '@renderer/lib/Color'
+import { ThumbnailDialog } from '@renderer/components/Dialogs'
+import type { T_ALBUM_SEARCH } from '@renderer/types'
+import QueueAPI, { type QueueItem } from '@renderer/scripts/modules/QueueAPI'
 
 import PlaySVG from "@assets/icons/player/PlaySVG.svg?react"
-import QueueAPI, { type QueueItem } from '@renderer/scripts/modules/QueueAPI'
+
 
 export default function AlbumSearch({ data }: { data: T_ALBUM_SEARCH }): React.JSX.Element {
   const { AlbumID, AlbumSongs, AlbumThumbnails, AlbumArtist, AlbumYear, AlbumName, AlbumRaw } = data;
@@ -45,6 +47,7 @@ export default function AlbumSearch({ data }: { data: T_ALBUM_SEARCH }): React.J
     QueueAPI.initQueue();
   };
 
+  const handleThumbnailDialog = (): void => $("#thumbnail-dialog")?.setAttribute("open", "");
 
   // Component
   return (
@@ -57,7 +60,10 @@ export default function AlbumSearch({ data }: { data: T_ALBUM_SEARCH }): React.J
       >
         {/* Album data sub-section */}
         <section className='flex items-center pt-4'>
-          <div className='sm:size-30 sm:m-4 lg:size-42 lg:m-6 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.75)]'>
+          <div 
+            onClick={handleThumbnailDialog}
+            className='sm:size-30 sm:m-4 lg:size-42 lg:m-6 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.75)]'
+          >
             <SongThumbnail thumbnail={AlbumThumbnails[1]?.url}/>
           </div>
 
@@ -102,6 +108,8 @@ export default function AlbumSearch({ data }: { data: T_ALBUM_SEARCH }): React.J
           />
         ))}
       </section>
+
+      <ThumbnailDialog thumbail={AlbumThumbnails[1]?.url}/>
     </div>
   );
 }

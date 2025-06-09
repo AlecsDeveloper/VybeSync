@@ -35,8 +35,12 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS albums (
     album_id TEXT PRIMARY KEY,
+    album_name TEXT NOT NULL,
+    album_artist TEXT NOT NULL,
+    album_duration INTEGER DEFAULT 0,
     songs_ids TEXT NOT NULL   -- Guardar JSON.stringify([...])
   );
+  
 
   CREATE TABLE IF NOT EXISTS playlists (
     playlist_id TEXT PRIMARY KEY,
@@ -124,13 +128,13 @@ export type PLAYLISTS_TABLE = {
 
 
 // Albums
-export async function insertAlbum(albumId: string, songsIds: string): Promise<void> {
+export async function insertAlbum(albumId: string, songsIds: string, albumName: string, albumArtist: string, albumDuration: number): Promise<void> {
   const stmt = db.prepare(`
-    INSERT OR REPLACE INTO albums (album_id, songs_ids)
-    VALUES (?, ?)
+    INSERT OR REPLACE INTO albums (album_id, songs_ids, album_name, album_artist, album_duration)
+    VALUES (?, ?, ?, ?, ?)
   `);
 
-  stmt.run(albumId, songsIds);
+  stmt.run(albumId, songsIds, albumName, albumArtist, albumDuration);
 }
 
 export function getAlbum(albumId: string): ALBUMS_TABLE {
@@ -143,6 +147,9 @@ export function getAlbum(albumId: string): ALBUMS_TABLE {
 export type ALBUMS_TABLE = {
   album_id: string;
   songs_ids: string;
+  album_name: string;
+  album_artist: string;
+  album_duration: number,
 } | undefined
 
 
